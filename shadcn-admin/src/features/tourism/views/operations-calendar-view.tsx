@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { format, isSameMonth, parse } from 'date-fns'
 import {
   CalendarRange,
@@ -25,6 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { api } from '@/lib/api'
+import { handleServerError } from '@/lib/handle-server-error'
+import { toast } from 'sonner'
+import { Input } from '@/components/ui/input'
+import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
+import { ResourceRowActions } from '@/components/shared/resource-row-actions'
+import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
 import {
   useBookingsQuery,
@@ -56,10 +64,16 @@ function statusBadgeVariant(
   return 'outline'
 }
 
+const statusOptions = ['pending', 'confirmed', 'cancelled'] as const
+
 export function OperationsCalendarView() {
+  const qc = useQueryClient()
   const [month, setMonth] = useState(() => new Date())
   const [selected, setSelected] = useState<Date | undefined>(() => new Date())
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [viewB, setViewB] = useState<Booking | null>(null)
+  const [editB, setEditB] = useState<Booking | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
 
   const { data: bookings = [], isPending, refetch } = useBookingsQuery()
   const { data: packages = [] } = useTourPackagesQuery()
@@ -130,6 +144,28 @@ export function OperationsCalendarView() {
     () => monthBookings.filter((b) => b.status === 'pending').length,
     [monthBookings],
   )
+
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editB) return
+    setEditSaving(true)
+    try {
+      await api.patch(`/api/bookings/${editB.id}`, {
+        status: editB.status,
+        guideId: editB.guideId,
+        startDate: editB.startDate.slice(0, 10),
+        totalRwf: editB.totalRwf,
+      })
+      toast.success('Booking saved')
+      setEditB(null)
+      await qc.invalidateQueries({ queryKey: ['bookings'] })
+      await qc.invalidateQueries({ queryKey: ['bootstrap'] })
+    } catch (err) {
+      handleServerError(err)
+    } finally {
+      setEditSaving(false)
+    }
+  }
 
   return (
     <TourismAdminShell
@@ -241,9 +277,16 @@ export function OperationsCalendarView() {
                     <span className='font-medium'>
                       {pkgTitle[b.packageId] ?? 'Package'}
                     </span>
-                    <Badge variant={statusBadgeVariant(b.status)}>
-                      {b.status}
-                    </Badge>
+                    <div className='flex items-center gap-1'>
+                      <Badge variant={statusBadgeVariant(b.status)}>
+                        {b.status}
+                      </Badge>
+                      <ResourceRowActions
+                        itemLabel={pkgTitle[b.packageId] ?? 'booking'}
+                        onView={() => setViewB(b)}
+                        onEdit={() => setEditB({ ...b })}
+                      />
+                    </div>
                   </div>
                   <div className='text-muted-foreground flex items-center gap-1 text-xs'>
                     <Users className='size-3.5' />
@@ -267,6 +310,105 @@ export function OperationsCalendarView() {
           </CardContent>
         </Card>
       </div>
+
+      <ResourceViewDialog
+        open={!!viewB}
+        onOpenChange={(o) => !o && setViewB(null)}
+        title='Booking'
+        description={
+          viewB
+            ? `${pkgTitle[viewB.packageId] ?? viewB.packageId} · ${userName[viewB.userId] ?? viewB.userId.slice(0, 8)}`
+            : undefined
+        }
+        onEdit={viewB ? () => setEditB({ ...viewB }) : undefined}
+      >
+        {viewB ? (
+          <div className='space-y-2 text-sm'>
+            <p>
+              <span className='text-muted-foreground'>Start:</span> {viewB.startDate}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Total:</span>{' '}
+              {viewB.totalRwf?.toLocaleString()} Rwf
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Status:</span> {viewB.status}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Guide:</span>{' '}
+              {viewB.guideId ? guideNameByBooking[viewB.guideId] ?? viewB.guideId : '—'}
+            </p>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
+
+      <ResourceEditDialog
+        open={!!editB}
+        onOpenChange={(o) => !o && setEditB(null)}
+        title='Edit booking'
+        itemName={editB ? pkgTitle[editB.packageId] : undefined}
+        onSubmit={saveEdit}
+        saving={editSaving}
+      >
+        {editB ? (
+          <>
+            <div className='space-y-2'>
+              <Label htmlFor='cbsd'>Start date</Label>
+              <Input
+                id='cbsd'
+                type='date'
+                value={editB.startDate.slice(0, 10)}
+                onChange={(e) => setEditB({ ...editB, startDate: e.target.value })}
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='cbto'>Total (Rwf)</Label>
+              <Input
+                id='cbto'
+                type='number'
+                min={0}
+                value={editB.totalRwf}
+                onChange={(e) =>
+                  setEditB({ ...editB, totalRwf: Number(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='cbst'>Status</Label>
+              <select
+                id='cbst'
+                className='border-input bg-background w-full rounded-md border px-3 py-2 text-sm'
+                value={editB.status}
+                onChange={(e) => setEditB({ ...editB, status: e.target.value })}
+              >
+                {statusOptions.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='cbg'>Guide</Label>
+              <select
+                id='cbg'
+                className='border-input bg-background w-full rounded-md border px-3 py-2 text-sm'
+                value={editB.guideId ?? ''}
+                onChange={(e) =>
+                  setEditB({ ...editB, guideId: e.target.value || null })
+                }
+              >
+                <option value=''>— Unassigned —</option>
+                {(guides as { id: string; userId: string }[]).map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {userName[g.userId] ?? g.id.slice(0, 8)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        ) : null}
+      </ResourceEditDialog>
     </TourismAdminShell>
   )
 }

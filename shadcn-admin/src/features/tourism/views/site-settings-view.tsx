@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { RefreshCw } from 'lucide-react'
 import { api } from '@/lib/api'
+import { applyAdminSiteMeta } from '@/lib/apply-site-meta'
 import { handleServerError } from '@/lib/handle-server-error'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -14,14 +15,16 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
+import { ImageUploader } from '@/components/shared/image-uploader'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
 import { useSiteSettingsQuery } from '../hooks/use-tourism-queries'
 
 export function TourismSiteSettingsPage({
   section,
 }: {
-  section: 'content' | 'seo' | 'social'
+  section: 'content' | 'contact' | 'navigation' | 'seo' | 'social'
 }) {
   const qc = useQueryClient()
   const { data = {}, isPending, refetch } = useSiteSettingsQuery()
@@ -32,7 +35,8 @@ export function TourismSiteSettingsPage({
   const merge = async (patch: Record<string, unknown>) => {
     setPending(true)
     try {
-      await api.patch('/api/site-settings', patch)
+      const { data: next } = await api.patch<Record<string, unknown>>('/api/site-settings', patch)
+      applyAdminSiteMeta(next ?? { ...settings, ...patch })
       toast.success('Settings saved')
       await qc.invalidateQueries({ queryKey: ['site-settings'] })
       await qc.invalidateQueries({ queryKey: ['bootstrap'] })
@@ -48,7 +52,11 @@ export function TourismSiteSettingsPage({
       ? 'SEO settings'
       : section === 'social'
         ? 'Social links'
-        : 'Website content'
+        : section === 'contact'
+          ? 'Contact & brand'
+          : section === 'navigation'
+            ? 'Navigation'
+            : 'Website content'
 
   return (
     <TourismAdminShell
@@ -74,10 +82,57 @@ export function TourismSiteSettingsPage({
               initial={{
                 heroTitle: String(settings.heroTitle ?? ''),
                 heroSubtitle: String(settings.heroSubtitle ?? ''),
-                logoUrl: String(settings.logoUrl ?? ''),
-                contactEmail: String(settings.contactEmail ?? ''),
               }}
               onSave={(v) => merge(v)}
+              pending={pending}
+            />
+          </CardContent>
+        </Card>
+      ) : section === 'contact' ? (
+        <Card className='max-w-2xl'>
+          <CardHeader>
+            <CardTitle>Contact & brand</CardTitle>
+            <CardDescription>
+              Logo, company description, and contact details shown on the public site header, footer,
+              and contact page.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ContactForm
+              initial={{
+                brandName: String(settings.brandName ?? ''),
+                logoUrl: String(settings.logoUrl ?? ''),
+                companyDescription: String(
+                  settings.companyDescription ?? settings.footerDescription ?? '',
+                ),
+                contactEmail: String(settings.contactEmail ?? ''),
+                contactPhone: String(settings.contactPhone ?? ''),
+                emergencyPhone: String(settings.emergencyPhone ?? ''),
+                whatsapp: String(settings.whatsapp ?? ''),
+                address: String(settings.address ?? ''),
+                workingHours: String(settings.workingHours ?? ''),
+                publicSiteUrl: String(settings.publicSiteUrl ?? 'http://localhost:3000'),
+              }}
+              onSave={(v) =>
+                merge({
+                  ...v,
+                  footerDescription: v.companyDescription,
+                })
+              }
+              pending={pending}
+            />
+          </CardContent>
+        </Card>
+      ) : section === 'navigation' ? (
+        <Card className='max-w-2xl'>
+          <CardHeader>
+            <CardTitle>Header navigation</CardTitle>
+            <CardDescription>JSON array synced to travel-app header nav links.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <NavigationForm
+              initial={JSON.stringify(settings.navLinks ?? [], null, 2)}
+              onSave={(navLinks) => merge({ navLinks })}
               pending={pending}
             />
           </CardContent>
@@ -109,6 +164,7 @@ export function TourismSiteSettingsPage({
                 facebook: String(settings.facebook ?? ''),
                 instagram: String(settings.instagram ?? ''),
                 twitter: String(settings.twitter ?? ''),
+                youtube: String(settings.youtube ?? ''),
               }}
               onSave={(v) => merge(v)}
               pending={pending}
@@ -128,22 +184,18 @@ function ContentForm({
   initial: {
     heroTitle: string
     heroSubtitle: string
-    logoUrl: string
-    contactEmail: string
   }
   onSave: (v: Record<string, string>) => void
   pending: boolean
 }) {
   const [heroTitle, setHeroTitle] = useState(initial.heroTitle)
   const [heroSubtitle, setHeroSubtitle] = useState(initial.heroSubtitle)
-  const [logoUrl, setLogoUrl] = useState(initial.logoUrl)
-  const [contactEmail, setContactEmail] = useState(initial.contactEmail)
   return (
     <form
       className='space-y-4'
       onSubmit={(e) => {
         e.preventDefault()
-        onSave({ heroTitle, heroSubtitle, logoUrl, contactEmail })
+        onSave({ heroTitle, heroSubtitle })
       }}
     >
       <div className='space-y-2'>
@@ -155,34 +207,6 @@ function ContentForm({
         <Textarea
           value={heroSubtitle}
           onChange={(e) => setHeroSubtitle(e.target.value)}
-        />
-      </div>
-      <div className='space-y-2'>
-        <Label>Logo URL</Label>
-        <Input
-          placeholder='https://…/logo.png'
-          value={logoUrl}
-          onChange={(e) => setLogoUrl(e.target.value)}
-        />
-        {logoUrl ? (
-          <div className='bg-muted/30 w-fit rounded-md border p-2'>
-            <img
-              src={logoUrl}
-              alt='Logo preview'
-              className='h-10 max-w-[220px] object-contain'
-              onError={(e) => {
-                ;(e.currentTarget as HTMLImageElement).style.display = 'none'
-              }}
-            />
-          </div>
-        ) : null}
-      </div>
-      <div className='space-y-2'>
-        <Label>Contact email (display)</Label>
-        <Input
-          type='email'
-          value={contactEmail}
-          onChange={(e) => setContactEmail(e.target.value)}
         />
       </div>
       <Button type='submit' disabled={pending}>
@@ -229,24 +253,161 @@ function SeoForm({
   )
 }
 
+function ContactForm({
+  initial,
+  onSave,
+  pending,
+}: {
+  initial: {
+    brandName: string
+    logoUrl: string
+    companyDescription: string
+    contactEmail: string
+    contactPhone: string
+    emergencyPhone: string
+    whatsapp: string
+    address: string
+    workingHours: string
+    publicSiteUrl: string
+  }
+  onSave: (v: Record<string, string>) => void
+  pending: boolean
+}) {
+  const [form, setForm] = useState(initial)
+  const set = (k: keyof typeof initial) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }))
+  return (
+    <form
+      className='space-y-6'
+      onSubmit={(e) => {
+        e.preventDefault()
+        onSave(form)
+      }}
+    >
+      <div className='space-y-4'>
+        <h3 className='text-sm font-medium'>Brand identity</h3>
+        <div className='space-y-2'>
+          <Label>Brand name</Label>
+          <Input className='w-full' value={form.brandName} onChange={set('brandName')} />
+        </div>
+        <ImageUploader
+          label='Company logo'
+          value={form.logoUrl}
+          onChange={(logoUrl) => setForm((f) => ({ ...f, logoUrl }))}
+        />
+        <div className='space-y-2'>
+          <Label>Company description</Label>
+          <Textarea
+            className='min-h-[120px]'
+            value={form.companyDescription}
+            onChange={set('companyDescription')}
+            placeholder='Short description of your company for the footer, contact page, and about sections.'
+          />
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className='space-y-4'>
+        <h3 className='text-sm font-medium'>Contact details</h3>
+        {(
+          [
+            ['contactEmail', 'Contact email'],
+            ['contactPhone', 'Phone display'],
+            ['emergencyPhone', 'Emergency phone (24/7 tours)'],
+            ['whatsapp', 'WhatsApp number (no +)'],
+            ['address', 'Address'],
+            ['workingHours', 'Working hours'],
+          ] as const
+        ).map(([key, label]) => (
+          <div key={key} className='space-y-2'>
+            <Label>{label}</Label>
+            <Input className='w-full' value={form[key]} onChange={set(key)} />
+          </div>
+        ))}
+      </div>
+
+      <Separator />
+
+      <div className='space-y-4'>
+        <h3 className='text-sm font-medium'>Site preview</h3>
+        <div className='space-y-2'>
+          <Label>Public site URL</Label>
+          <Input className='w-full' value={form.publicSiteUrl} onChange={set('publicSiteUrl')} />
+          <p className='text-muted-foreground text-xs'>
+            Used for preview links in admin. Example: http://localhost:3000
+          </p>
+        </div>
+      </div>
+
+      <Button type='submit' disabled={pending}>
+        {pending ? 'Saving…' : 'Save contact & brand'}
+      </Button>
+    </form>
+  )
+}
+
+function NavigationForm({
+  initial,
+  onSave,
+  pending,
+}: {
+  initial: string
+  onSave: (navLinks: unknown[]) => void
+  pending: boolean
+}) {
+  const [raw, setRaw] = useState(initial)
+  const [error, setError] = useState('')
+  return (
+    <form
+      className='space-y-4'
+      onSubmit={(e) => {
+        e.preventDefault()
+        try {
+          const parsed = JSON.parse(raw)
+          if (!Array.isArray(parsed)) throw new Error('Must be a JSON array')
+          setError('')
+          onSave(parsed)
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Invalid JSON')
+        }
+      }}
+    >
+      <Textarea
+        className='min-h-[240px] font-mono text-xs'
+        value={raw}
+        onChange={(e) => setRaw(e.target.value)}
+      />
+      {error ? <p className='text-destructive text-sm'>{error}</p> : null}
+      <p className='text-muted-foreground text-xs'>
+        Example: [{'{'}&quot;to&quot;:&quot;/&quot;,&quot;label&quot;:&quot;Home&quot;,&quot;end&quot;:true{'}'}]
+      </p>
+      <Button type='submit' disabled={pending}>
+        {pending ? 'Saving…' : 'Save navigation'}
+      </Button>
+    </form>
+  )
+}
+
 function SocialForm({
   initial,
   onSave,
   pending,
 }: {
-  initial: { facebook: string; instagram: string; twitter: string }
+  initial: { facebook: string; instagram: string; twitter: string; youtube: string }
   onSave: (v: Record<string, string>) => void
   pending: boolean
 }) {
   const [facebook, setFacebook] = useState(initial.facebook)
   const [instagram, setInstagram] = useState(initial.instagram)
   const [twitter, setTwitter] = useState(initial.twitter)
+  const [youtube, setYoutube] = useState(initial.youtube)
   return (
     <form
       className='space-y-4'
       onSubmit={(e) => {
         e.preventDefault()
-        onSave({ facebook, instagram, twitter })
+        onSave({ facebook, instagram, twitter, youtube })
       }}
     >
       <div className='space-y-2'>
@@ -260,6 +421,10 @@ function SocialForm({
       <div className='space-y-2'>
         <Label>X / Twitter URL</Label>
         <Input value={twitter} onChange={(e) => setTwitter(e.target.value)} />
+      </div>
+      <div className='space-y-2'>
+        <Label>YouTube URL</Label>
+        <Input value={youtube} onChange={(e) => setYoutube(e.target.value)} />
       </div>
       <Button type='submit' disabled={pending}>
         {pending ? 'Saving…' : 'Save'}

@@ -26,6 +26,7 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_authenticated/route'
 import { Route as ClerkauthRouteRouteImport } from './routes/clerk/(auth)/route'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedWebsiteIndexRouteImport } from './routes/_authenticated/website/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTrackingIndexRouteImport } from './routes/_authenticated/tracking/index'
 import { Route as AuthenticatedTourPackagesIndexRouteImport } from './routes/_authenticated/tour-packages/index'
@@ -52,13 +53,19 @@ import { Route as AuthenticatedUsersCustomersRouteImport } from './routes/_authe
 import { Route as AuthenticatedTourPackagesNewRouteImport } from './routes/_authenticated/tour-packages/new'
 import { Route as AuthenticatedTourPackagesItinerariesRouteImport } from './routes/_authenticated/tour-packages/itineraries'
 import { Route as AuthenticatedTourPackagesCategoriesRouteImport } from './routes/_authenticated/tour-packages/categories'
+import { Route as AuthenticatedSettingsTeamRouteImport } from './routes/_authenticated/settings/team'
 import { Route as AuthenticatedSettingsSocialRouteImport } from './routes/_authenticated/settings/social'
 import { Route as AuthenticatedSettingsSeoRouteImport } from './routes/_authenticated/settings/seo'
+import { Route as AuthenticatedSettingsPricingRouteImport } from './routes/_authenticated/settings/pricing'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
+import { Route as AuthenticatedSettingsNavigationRouteImport } from './routes/_authenticated/settings/navigation'
+import { Route as AuthenticatedSettingsLegalRouteImport } from './routes/_authenticated/settings/legal'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsContentRouteImport } from './routes/_authenticated/settings/content'
+import { Route as AuthenticatedSettingsContactRouteImport } from './routes/_authenticated/settings/contact'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
+import { Route as AuthenticatedSettingsAboutRouteImport } from './routes/_authenticated/settings/about'
 import { Route as AuthenticatedSecurityRolesRouteImport } from './routes/_authenticated/security/roles'
 import { Route as AuthenticatedSecurityActivityRouteImport } from './routes/_authenticated/security/activity'
 import { Route as AuthenticatedReviewsPendingRouteImport } from './routes/_authenticated/reviews/pending'
@@ -76,13 +83,18 @@ import { Route as AuthenticatedGalleryUploadRouteImport } from './routes/_authen
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedDestinationsNewRouteImport } from './routes/_authenticated/destinations/new'
 import { Route as AuthenticatedCarRentalPendingRouteImport } from './routes/_authenticated/car-rental/pending'
+import { Route as AuthenticatedBookingsTourRequestsRouteImport } from './routes/_authenticated/bookings/tour-requests'
 import { Route as AuthenticatedBookingsPendingRouteImport } from './routes/_authenticated/bookings/pending'
 import { Route as AuthenticatedBookingsConfirmedRouteImport } from './routes/_authenticated/bookings/confirmed'
 import { Route as AuthenticatedBookingsCancelledRouteImport } from './routes/_authenticated/bookings/cancelled'
 import { Route as AuthenticatedBlogNewRouteImport } from './routes/_authenticated/blog/new'
 import { Route as AuthenticatedBlogCategoriesRouteImport } from './routes/_authenticated/blog/categories'
+import { Route as AuthenticatedWebsiteHeroIndexRouteImport } from './routes/_authenticated/website/hero/index'
 import { Route as AuthenticatedCarRentalVehiclesIndexRouteImport } from './routes/_authenticated/car-rental/vehicles/index'
+import { Route as AuthenticatedWebsiteHeroNewRouteImport } from './routes/_authenticated/website/hero/new'
+import { Route as AuthenticatedWebsiteHeroSlideIdRouteImport } from './routes/_authenticated/website/hero/$slideId'
 import { Route as AuthenticatedCarRentalVehiclesNewRouteImport } from './routes/_authenticated/car-rental/vehicles/new'
+import { Route as AuthenticatedCarRentalVehiclesCategoriesRouteImport } from './routes/_authenticated/car-rental/vehicles/categories'
 import { Route as AuthenticatedCarRentalVehiclesVehicleIdRouteImport } from './routes/_authenticated/car-rental/vehicles/$vehicleId'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
@@ -166,6 +178,12 @@ const AuthenticatedSettingsRouteRoute =
   AuthenticatedSettingsRouteRouteImport.update({
     id: '/settings',
     path: '/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWebsiteIndexRoute =
+  AuthenticatedWebsiteIndexRouteImport.update({
+    id: '/website/',
+    path: '/website/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
@@ -316,6 +334,12 @@ const AuthenticatedTourPackagesCategoriesRoute =
     path: '/tour-packages/categories',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsTeamRoute =
+  AuthenticatedSettingsTeamRouteImport.update({
+    id: '/team',
+    path: '/team',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
 const AuthenticatedSettingsSocialRoute =
   AuthenticatedSettingsSocialRouteImport.update({
     id: '/social',
@@ -328,10 +352,28 @@ const AuthenticatedSettingsSeoRoute =
     path: '/seo',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedSettingsPricingRoute =
+  AuthenticatedSettingsPricingRouteImport.update({
+    id: '/pricing',
+    path: '/pricing',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingsNavigationRoute =
+  AuthenticatedSettingsNavigationRouteImport.update({
+    id: '/navigation',
+    path: '/navigation',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingsLegalRoute =
+  AuthenticatedSettingsLegalRouteImport.update({
+    id: '/legal',
+    path: '/legal',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
 const AuthenticatedSettingsDisplayRoute =
@@ -346,6 +388,12 @@ const AuthenticatedSettingsContentRoute =
     path: '/content',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedSettingsContactRoute =
+  AuthenticatedSettingsContactRouteImport.update({
+    id: '/contact',
+    path: '/contact',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
 const AuthenticatedSettingsAppearanceRoute =
   AuthenticatedSettingsAppearanceRouteImport.update({
     id: '/appearance',
@@ -356,6 +404,12 @@ const AuthenticatedSettingsAccountRoute =
   AuthenticatedSettingsAccountRouteImport.update({
     id: '/account',
     path: '/account',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingsAboutRoute =
+  AuthenticatedSettingsAboutRouteImport.update({
+    id: '/about',
+    path: '/about',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
 const AuthenticatedSecurityRolesRoute =
@@ -460,6 +514,12 @@ const AuthenticatedCarRentalPendingRoute =
     path: '/car-rental/pending',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBookingsTourRequestsRoute =
+  AuthenticatedBookingsTourRequestsRouteImport.update({
+    id: '/bookings/tour-requests',
+    path: '/bookings/tour-requests',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedBookingsPendingRoute =
   AuthenticatedBookingsPendingRouteImport.update({
     id: '/bookings/pending',
@@ -489,16 +549,40 @@ const AuthenticatedBlogCategoriesRoute =
     path: '/blog/categories',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedWebsiteHeroIndexRoute =
+  AuthenticatedWebsiteHeroIndexRouteImport.update({
+    id: '/website/hero/',
+    path: '/website/hero/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCarRentalVehiclesIndexRoute =
   AuthenticatedCarRentalVehiclesIndexRouteImport.update({
     id: '/car-rental/vehicles/',
     path: '/car-rental/vehicles/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedWebsiteHeroNewRoute =
+  AuthenticatedWebsiteHeroNewRouteImport.update({
+    id: '/website/hero/new',
+    path: '/website/hero/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWebsiteHeroSlideIdRoute =
+  AuthenticatedWebsiteHeroSlideIdRouteImport.update({
+    id: '/website/hero/$slideId',
+    path: '/website/hero/$slideId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCarRentalVehiclesNewRoute =
   AuthenticatedCarRentalVehiclesNewRouteImport.update({
     id: '/car-rental/vehicles/new',
     path: '/car-rental/vehicles/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCarRentalVehiclesCategoriesRoute =
+  AuthenticatedCarRentalVehiclesCategoriesRouteImport.update({
+    id: '/car-rental/vehicles/categories',
+    path: '/car-rental/vehicles/categories',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCarRentalVehiclesVehicleIdRoute =
@@ -528,6 +612,7 @@ export interface FileRoutesByFullPath {
   '/bookings/cancelled': typeof AuthenticatedBookingsCancelledRoute
   '/bookings/confirmed': typeof AuthenticatedBookingsConfirmedRoute
   '/bookings/pending': typeof AuthenticatedBookingsPendingRoute
+  '/bookings/tour-requests': typeof AuthenticatedBookingsTourRequestsRoute
   '/car-rental/pending': typeof AuthenticatedCarRentalPendingRoute
   '/destinations/new': typeof AuthenticatedDestinationsNewRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -545,13 +630,19 @@ export interface FileRoutesByFullPath {
   '/reviews/pending': typeof AuthenticatedReviewsPendingRoute
   '/security/activity': typeof AuthenticatedSecurityActivityRoute
   '/security/roles': typeof AuthenticatedSecurityRolesRoute
+  '/settings/about': typeof AuthenticatedSettingsAboutRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
+  '/settings/contact': typeof AuthenticatedSettingsContactRoute
   '/settings/content': typeof AuthenticatedSettingsContentRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/settings/legal': typeof AuthenticatedSettingsLegalRoute
+  '/settings/navigation': typeof AuthenticatedSettingsNavigationRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/settings/pricing': typeof AuthenticatedSettingsPricingRoute
   '/settings/seo': typeof AuthenticatedSettingsSeoRoute
   '/settings/social': typeof AuthenticatedSettingsSocialRoute
+  '/settings/team': typeof AuthenticatedSettingsTeamRoute
   '/tour-packages/categories': typeof AuthenticatedTourPackagesCategoriesRoute
   '/tour-packages/itineraries': typeof AuthenticatedTourPackagesItinerariesRoute
   '/tour-packages/new': typeof AuthenticatedTourPackagesNewRoute
@@ -578,9 +669,14 @@ export interface FileRoutesByFullPath {
   '/tour-packages/': typeof AuthenticatedTourPackagesIndexRoute
   '/tracking/': typeof AuthenticatedTrackingIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
+  '/website/': typeof AuthenticatedWebsiteIndexRoute
   '/car-rental/vehicles/$vehicleId': typeof AuthenticatedCarRentalVehiclesVehicleIdRoute
+  '/car-rental/vehicles/categories': typeof AuthenticatedCarRentalVehiclesCategoriesRoute
   '/car-rental/vehicles/new': typeof AuthenticatedCarRentalVehiclesNewRoute
+  '/website/hero/$slideId': typeof AuthenticatedWebsiteHeroSlideIdRoute
+  '/website/hero/new': typeof AuthenticatedWebsiteHeroNewRoute
   '/car-rental/vehicles/': typeof AuthenticatedCarRentalVehiclesIndexRoute
+  '/website/hero/': typeof AuthenticatedWebsiteHeroIndexRoute
 }
 export interface FileRoutesByTo {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -601,6 +697,7 @@ export interface FileRoutesByTo {
   '/bookings/cancelled': typeof AuthenticatedBookingsCancelledRoute
   '/bookings/confirmed': typeof AuthenticatedBookingsConfirmedRoute
   '/bookings/pending': typeof AuthenticatedBookingsPendingRoute
+  '/bookings/tour-requests': typeof AuthenticatedBookingsTourRequestsRoute
   '/car-rental/pending': typeof AuthenticatedCarRentalPendingRoute
   '/destinations/new': typeof AuthenticatedDestinationsNewRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -618,13 +715,19 @@ export interface FileRoutesByTo {
   '/reviews/pending': typeof AuthenticatedReviewsPendingRoute
   '/security/activity': typeof AuthenticatedSecurityActivityRoute
   '/security/roles': typeof AuthenticatedSecurityRolesRoute
+  '/settings/about': typeof AuthenticatedSettingsAboutRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
+  '/settings/contact': typeof AuthenticatedSettingsContactRoute
   '/settings/content': typeof AuthenticatedSettingsContentRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/settings/legal': typeof AuthenticatedSettingsLegalRoute
+  '/settings/navigation': typeof AuthenticatedSettingsNavigationRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/settings/pricing': typeof AuthenticatedSettingsPricingRoute
   '/settings/seo': typeof AuthenticatedSettingsSeoRoute
   '/settings/social': typeof AuthenticatedSettingsSocialRoute
+  '/settings/team': typeof AuthenticatedSettingsTeamRoute
   '/tour-packages/categories': typeof AuthenticatedTourPackagesCategoriesRoute
   '/tour-packages/itineraries': typeof AuthenticatedTourPackagesItinerariesRoute
   '/tour-packages/new': typeof AuthenticatedTourPackagesNewRoute
@@ -651,9 +754,14 @@ export interface FileRoutesByTo {
   '/tour-packages': typeof AuthenticatedTourPackagesIndexRoute
   '/tracking': typeof AuthenticatedTrackingIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/website': typeof AuthenticatedWebsiteIndexRoute
   '/car-rental/vehicles/$vehicleId': typeof AuthenticatedCarRentalVehiclesVehicleIdRoute
+  '/car-rental/vehicles/categories': typeof AuthenticatedCarRentalVehiclesCategoriesRoute
   '/car-rental/vehicles/new': typeof AuthenticatedCarRentalVehiclesNewRoute
+  '/website/hero/$slideId': typeof AuthenticatedWebsiteHeroSlideIdRoute
+  '/website/hero/new': typeof AuthenticatedWebsiteHeroNewRoute
   '/car-rental/vehicles': typeof AuthenticatedCarRentalVehiclesIndexRoute
+  '/website/hero': typeof AuthenticatedWebsiteHeroIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -679,6 +787,7 @@ export interface FileRoutesById {
   '/_authenticated/bookings/cancelled': typeof AuthenticatedBookingsCancelledRoute
   '/_authenticated/bookings/confirmed': typeof AuthenticatedBookingsConfirmedRoute
   '/_authenticated/bookings/pending': typeof AuthenticatedBookingsPendingRoute
+  '/_authenticated/bookings/tour-requests': typeof AuthenticatedBookingsTourRequestsRoute
   '/_authenticated/car-rental/pending': typeof AuthenticatedCarRentalPendingRoute
   '/_authenticated/destinations/new': typeof AuthenticatedDestinationsNewRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -696,13 +805,19 @@ export interface FileRoutesById {
   '/_authenticated/reviews/pending': typeof AuthenticatedReviewsPendingRoute
   '/_authenticated/security/activity': typeof AuthenticatedSecurityActivityRoute
   '/_authenticated/security/roles': typeof AuthenticatedSecurityRolesRoute
+  '/_authenticated/settings/about': typeof AuthenticatedSettingsAboutRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
+  '/_authenticated/settings/contact': typeof AuthenticatedSettingsContactRoute
   '/_authenticated/settings/content': typeof AuthenticatedSettingsContentRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/_authenticated/settings/legal': typeof AuthenticatedSettingsLegalRoute
+  '/_authenticated/settings/navigation': typeof AuthenticatedSettingsNavigationRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/settings/pricing': typeof AuthenticatedSettingsPricingRoute
   '/_authenticated/settings/seo': typeof AuthenticatedSettingsSeoRoute
   '/_authenticated/settings/social': typeof AuthenticatedSettingsSocialRoute
+  '/_authenticated/settings/team': typeof AuthenticatedSettingsTeamRoute
   '/_authenticated/tour-packages/categories': typeof AuthenticatedTourPackagesCategoriesRoute
   '/_authenticated/tour-packages/itineraries': typeof AuthenticatedTourPackagesItinerariesRoute
   '/_authenticated/tour-packages/new': typeof AuthenticatedTourPackagesNewRoute
@@ -729,9 +844,14 @@ export interface FileRoutesById {
   '/_authenticated/tour-packages/': typeof AuthenticatedTourPackagesIndexRoute
   '/_authenticated/tracking/': typeof AuthenticatedTrackingIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/website/': typeof AuthenticatedWebsiteIndexRoute
   '/_authenticated/car-rental/vehicles/$vehicleId': typeof AuthenticatedCarRentalVehiclesVehicleIdRoute
+  '/_authenticated/car-rental/vehicles/categories': typeof AuthenticatedCarRentalVehiclesCategoriesRoute
   '/_authenticated/car-rental/vehicles/new': typeof AuthenticatedCarRentalVehiclesNewRoute
+  '/_authenticated/website/hero/$slideId': typeof AuthenticatedWebsiteHeroSlideIdRoute
+  '/_authenticated/website/hero/new': typeof AuthenticatedWebsiteHeroNewRoute
   '/_authenticated/car-rental/vehicles/': typeof AuthenticatedCarRentalVehiclesIndexRoute
+  '/_authenticated/website/hero/': typeof AuthenticatedWebsiteHeroIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -755,6 +875,7 @@ export interface FileRouteTypes {
     | '/bookings/cancelled'
     | '/bookings/confirmed'
     | '/bookings/pending'
+    | '/bookings/tour-requests'
     | '/car-rental/pending'
     | '/destinations/new'
     | '/errors/$error'
@@ -772,13 +893,19 @@ export interface FileRouteTypes {
     | '/reviews/pending'
     | '/security/activity'
     | '/security/roles'
+    | '/settings/about'
     | '/settings/account'
     | '/settings/appearance'
+    | '/settings/contact'
     | '/settings/content'
     | '/settings/display'
+    | '/settings/legal'
+    | '/settings/navigation'
     | '/settings/notifications'
+    | '/settings/pricing'
     | '/settings/seo'
     | '/settings/social'
+    | '/settings/team'
     | '/tour-packages/categories'
     | '/tour-packages/itineraries'
     | '/tour-packages/new'
@@ -805,9 +932,14 @@ export interface FileRouteTypes {
     | '/tour-packages/'
     | '/tracking/'
     | '/users/'
+    | '/website/'
     | '/car-rental/vehicles/$vehicleId'
+    | '/car-rental/vehicles/categories'
     | '/car-rental/vehicles/new'
+    | '/website/hero/$slideId'
+    | '/website/hero/new'
     | '/car-rental/vehicles/'
+    | '/website/hero/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clerk'
@@ -828,6 +960,7 @@ export interface FileRouteTypes {
     | '/bookings/cancelled'
     | '/bookings/confirmed'
     | '/bookings/pending'
+    | '/bookings/tour-requests'
     | '/car-rental/pending'
     | '/destinations/new'
     | '/errors/$error'
@@ -845,13 +978,19 @@ export interface FileRouteTypes {
     | '/reviews/pending'
     | '/security/activity'
     | '/security/roles'
+    | '/settings/about'
     | '/settings/account'
     | '/settings/appearance'
+    | '/settings/contact'
     | '/settings/content'
     | '/settings/display'
+    | '/settings/legal'
+    | '/settings/navigation'
     | '/settings/notifications'
+    | '/settings/pricing'
     | '/settings/seo'
     | '/settings/social'
+    | '/settings/team'
     | '/tour-packages/categories'
     | '/tour-packages/itineraries'
     | '/tour-packages/new'
@@ -878,9 +1017,14 @@ export interface FileRouteTypes {
     | '/tour-packages'
     | '/tracking'
     | '/users'
+    | '/website'
     | '/car-rental/vehicles/$vehicleId'
+    | '/car-rental/vehicles/categories'
     | '/car-rental/vehicles/new'
+    | '/website/hero/$slideId'
+    | '/website/hero/new'
     | '/car-rental/vehicles'
+    | '/website/hero'
   id:
     | '__root__'
     | '/_authenticated'
@@ -905,6 +1049,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bookings/cancelled'
     | '/_authenticated/bookings/confirmed'
     | '/_authenticated/bookings/pending'
+    | '/_authenticated/bookings/tour-requests'
     | '/_authenticated/car-rental/pending'
     | '/_authenticated/destinations/new'
     | '/_authenticated/errors/$error'
@@ -922,13 +1067,19 @@ export interface FileRouteTypes {
     | '/_authenticated/reviews/pending'
     | '/_authenticated/security/activity'
     | '/_authenticated/security/roles'
+    | '/_authenticated/settings/about'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
+    | '/_authenticated/settings/contact'
     | '/_authenticated/settings/content'
     | '/_authenticated/settings/display'
+    | '/_authenticated/settings/legal'
+    | '/_authenticated/settings/navigation'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/settings/pricing'
     | '/_authenticated/settings/seo'
     | '/_authenticated/settings/social'
+    | '/_authenticated/settings/team'
     | '/_authenticated/tour-packages/categories'
     | '/_authenticated/tour-packages/itineraries'
     | '/_authenticated/tour-packages/new'
@@ -955,9 +1106,14 @@ export interface FileRouteTypes {
     | '/_authenticated/tour-packages/'
     | '/_authenticated/tracking/'
     | '/_authenticated/users/'
+    | '/_authenticated/website/'
     | '/_authenticated/car-rental/vehicles/$vehicleId'
+    | '/_authenticated/car-rental/vehicles/categories'
     | '/_authenticated/car-rental/vehicles/new'
+    | '/_authenticated/website/hero/$slideId'
+    | '/_authenticated/website/hero/new'
     | '/_authenticated/car-rental/vehicles/'
+    | '/_authenticated/website/hero/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1094,6 +1250,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/website/': {
+      id: '/_authenticated/website/'
+      path: '/website'
+      fullPath: '/website/'
+      preLoaderRoute: typeof AuthenticatedWebsiteIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/users/': {
@@ -1278,6 +1441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTourPackagesCategoriesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/team': {
+      id: '/_authenticated/settings/team'
+      path: '/team'
+      fullPath: '/settings/team'
+      preLoaderRoute: typeof AuthenticatedSettingsTeamRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
     '/_authenticated/settings/social': {
       id: '/_authenticated/settings/social'
       path: '/social'
@@ -1292,11 +1462,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsSeoRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/settings/pricing': {
+      id: '/_authenticated/settings/pricing'
+      path: '/pricing'
+      fullPath: '/settings/pricing'
+      preLoaderRoute: typeof AuthenticatedSettingsPricingRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
       path: '/notifications'
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/settings/navigation': {
+      id: '/_authenticated/settings/navigation'
+      path: '/navigation'
+      fullPath: '/settings/navigation'
+      preLoaderRoute: typeof AuthenticatedSettingsNavigationRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/settings/legal': {
+      id: '/_authenticated/settings/legal'
+      path: '/legal'
+      fullPath: '/settings/legal'
+      preLoaderRoute: typeof AuthenticatedSettingsLegalRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
     '/_authenticated/settings/display': {
@@ -1313,6 +1504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsContentRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/settings/contact': {
+      id: '/_authenticated/settings/contact'
+      path: '/contact'
+      fullPath: '/settings/contact'
+      preLoaderRoute: typeof AuthenticatedSettingsContactRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
     '/_authenticated/settings/appearance': {
       id: '/_authenticated/settings/appearance'
       path: '/appearance'
@@ -1325,6 +1523,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/settings/account'
       preLoaderRoute: typeof AuthenticatedSettingsAccountRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/settings/about': {
+      id: '/_authenticated/settings/about'
+      path: '/about'
+      fullPath: '/settings/about'
+      preLoaderRoute: typeof AuthenticatedSettingsAboutRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
     '/_authenticated/security/roles': {
@@ -1446,6 +1651,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarRentalPendingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bookings/tour-requests': {
+      id: '/_authenticated/bookings/tour-requests'
+      path: '/bookings/tour-requests'
+      fullPath: '/bookings/tour-requests'
+      preLoaderRoute: typeof AuthenticatedBookingsTourRequestsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/bookings/pending': {
       id: '/_authenticated/bookings/pending'
       path: '/bookings/pending'
@@ -1481,6 +1693,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBlogCategoriesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/website/hero/': {
+      id: '/_authenticated/website/hero/'
+      path: '/website/hero'
+      fullPath: '/website/hero/'
+      preLoaderRoute: typeof AuthenticatedWebsiteHeroIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/car-rental/vehicles/': {
       id: '/_authenticated/car-rental/vehicles/'
       path: '/car-rental/vehicles'
@@ -1488,11 +1707,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarRentalVehiclesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/website/hero/new': {
+      id: '/_authenticated/website/hero/new'
+      path: '/website/hero/new'
+      fullPath: '/website/hero/new'
+      preLoaderRoute: typeof AuthenticatedWebsiteHeroNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/website/hero/$slideId': {
+      id: '/_authenticated/website/hero/$slideId'
+      path: '/website/hero/$slideId'
+      fullPath: '/website/hero/$slideId'
+      preLoaderRoute: typeof AuthenticatedWebsiteHeroSlideIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/car-rental/vehicles/new': {
       id: '/_authenticated/car-rental/vehicles/new'
       path: '/car-rental/vehicles/new'
       fullPath: '/car-rental/vehicles/new'
       preLoaderRoute: typeof AuthenticatedCarRentalVehiclesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/car-rental/vehicles/categories': {
+      id: '/_authenticated/car-rental/vehicles/categories'
+      path: '/car-rental/vehicles/categories'
+      fullPath: '/car-rental/vehicles/categories'
+      preLoaderRoute: typeof AuthenticatedCarRentalVehiclesCategoriesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/car-rental/vehicles/$vehicleId': {
@@ -1506,26 +1746,38 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedSettingsRouteRouteChildren {
+  AuthenticatedSettingsAboutRoute: typeof AuthenticatedSettingsAboutRoute
   AuthenticatedSettingsAccountRoute: typeof AuthenticatedSettingsAccountRoute
   AuthenticatedSettingsAppearanceRoute: typeof AuthenticatedSettingsAppearanceRoute
+  AuthenticatedSettingsContactRoute: typeof AuthenticatedSettingsContactRoute
   AuthenticatedSettingsContentRoute: typeof AuthenticatedSettingsContentRoute
   AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
+  AuthenticatedSettingsLegalRoute: typeof AuthenticatedSettingsLegalRoute
+  AuthenticatedSettingsNavigationRoute: typeof AuthenticatedSettingsNavigationRoute
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
+  AuthenticatedSettingsPricingRoute: typeof AuthenticatedSettingsPricingRoute
   AuthenticatedSettingsSeoRoute: typeof AuthenticatedSettingsSeoRoute
   AuthenticatedSettingsSocialRoute: typeof AuthenticatedSettingsSocialRoute
+  AuthenticatedSettingsTeamRoute: typeof AuthenticatedSettingsTeamRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
 
 const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteChildren =
   {
+    AuthenticatedSettingsAboutRoute: AuthenticatedSettingsAboutRoute,
     AuthenticatedSettingsAccountRoute: AuthenticatedSettingsAccountRoute,
     AuthenticatedSettingsAppearanceRoute: AuthenticatedSettingsAppearanceRoute,
+    AuthenticatedSettingsContactRoute: AuthenticatedSettingsContactRoute,
     AuthenticatedSettingsContentRoute: AuthenticatedSettingsContentRoute,
     AuthenticatedSettingsDisplayRoute: AuthenticatedSettingsDisplayRoute,
+    AuthenticatedSettingsLegalRoute: AuthenticatedSettingsLegalRoute,
+    AuthenticatedSettingsNavigationRoute: AuthenticatedSettingsNavigationRoute,
     AuthenticatedSettingsNotificationsRoute:
       AuthenticatedSettingsNotificationsRoute,
+    AuthenticatedSettingsPricingRoute: AuthenticatedSettingsPricingRoute,
     AuthenticatedSettingsSeoRoute: AuthenticatedSettingsSeoRoute,
     AuthenticatedSettingsSocialRoute: AuthenticatedSettingsSocialRoute,
+    AuthenticatedSettingsTeamRoute: AuthenticatedSettingsTeamRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   }
 
@@ -1543,6 +1795,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBookingsCancelledRoute: typeof AuthenticatedBookingsCancelledRoute
   AuthenticatedBookingsConfirmedRoute: typeof AuthenticatedBookingsConfirmedRoute
   AuthenticatedBookingsPendingRoute: typeof AuthenticatedBookingsPendingRoute
+  AuthenticatedBookingsTourRequestsRoute: typeof AuthenticatedBookingsTourRequestsRoute
   AuthenticatedCarRentalPendingRoute: typeof AuthenticatedCarRentalPendingRoute
   AuthenticatedDestinationsNewRoute: typeof AuthenticatedDestinationsNewRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
@@ -1582,9 +1835,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTourPackagesIndexRoute: typeof AuthenticatedTourPackagesIndexRoute
   AuthenticatedTrackingIndexRoute: typeof AuthenticatedTrackingIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedWebsiteIndexRoute: typeof AuthenticatedWebsiteIndexRoute
   AuthenticatedCarRentalVehiclesVehicleIdRoute: typeof AuthenticatedCarRentalVehiclesVehicleIdRoute
+  AuthenticatedCarRentalVehiclesCategoriesRoute: typeof AuthenticatedCarRentalVehiclesCategoriesRoute
   AuthenticatedCarRentalVehiclesNewRoute: typeof AuthenticatedCarRentalVehiclesNewRoute
+  AuthenticatedWebsiteHeroSlideIdRoute: typeof AuthenticatedWebsiteHeroSlideIdRoute
+  AuthenticatedWebsiteHeroNewRoute: typeof AuthenticatedWebsiteHeroNewRoute
   AuthenticatedCarRentalVehiclesIndexRoute: typeof AuthenticatedCarRentalVehiclesIndexRoute
+  AuthenticatedWebsiteHeroIndexRoute: typeof AuthenticatedWebsiteHeroIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1596,6 +1854,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBookingsCancelledRoute: AuthenticatedBookingsCancelledRoute,
   AuthenticatedBookingsConfirmedRoute: AuthenticatedBookingsConfirmedRoute,
   AuthenticatedBookingsPendingRoute: AuthenticatedBookingsPendingRoute,
+  AuthenticatedBookingsTourRequestsRoute:
+    AuthenticatedBookingsTourRequestsRoute,
   AuthenticatedCarRentalPendingRoute: AuthenticatedCarRentalPendingRoute,
   AuthenticatedDestinationsNewRoute: AuthenticatedDestinationsNewRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
@@ -1638,12 +1898,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTourPackagesIndexRoute: AuthenticatedTourPackagesIndexRoute,
   AuthenticatedTrackingIndexRoute: AuthenticatedTrackingIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedWebsiteIndexRoute: AuthenticatedWebsiteIndexRoute,
   AuthenticatedCarRentalVehiclesVehicleIdRoute:
     AuthenticatedCarRentalVehiclesVehicleIdRoute,
+  AuthenticatedCarRentalVehiclesCategoriesRoute:
+    AuthenticatedCarRentalVehiclesCategoriesRoute,
   AuthenticatedCarRentalVehiclesNewRoute:
     AuthenticatedCarRentalVehiclesNewRoute,
+  AuthenticatedWebsiteHeroSlideIdRoute: AuthenticatedWebsiteHeroSlideIdRoute,
+  AuthenticatedWebsiteHeroNewRoute: AuthenticatedWebsiteHeroNewRoute,
   AuthenticatedCarRentalVehiclesIndexRoute:
     AuthenticatedCarRentalVehiclesIndexRoute,
+  AuthenticatedWebsiteHeroIndexRoute: AuthenticatedWebsiteHeroIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

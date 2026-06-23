@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import {
   addDays,
@@ -18,7 +18,6 @@ import {
 import { api } from '@/lib/api'
 import { handleServerError } from '@/lib/handle-server-error'
 import { toast } from 'sonner'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -27,15 +26,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
+import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
 import { Switch } from '@/components/ui/switch'
 import {
   Table,
@@ -46,8 +40,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { AdminStatusSelect } from '@/components/shared/admin-status-select'
 import { ResourceRowActions } from '@/components/shared/resource-row-actions'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
+import { BOOKING_STATUSES } from '../lib/status-options'
 import {
   useBookingsQuery,
   useDestinationsQuery,
@@ -85,7 +81,7 @@ function osmEmbedUrl(bbox: string): string {
   return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik`
 }
 
-const statusOptions = ['pending', 'confirmed', 'cancelled'] as const
+const statusOptions = BOOKING_STATUSES
 
 export function LiveTrackingView() {
   const qc = useQueryClient()
@@ -96,6 +92,18 @@ export function LiveTrackingView() {
   const [editSaving, setEditSaving] = useState(false)
   const [deleteB, setDeleteB] = useState<Booking | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      await api.patch(`/api/bookings/${id}`, { status })
+    },
+    onSuccess: async () => {
+      toast.success('Booking status updated — customer notified by email')
+      await qc.invalidateQueries({ queryKey: ['bookings'] })
+      await qc.invalidateQueries({ queryKey: ['bootstrap'] })
+    },
+    onError: handleServerError,
+  })
 
   const { data: destinations = [], isPending: destPending } =
     useDestinationsQuery()
@@ -348,7 +356,7 @@ export function LiveTrackingView() {
                 Confirmed or pending tours starting {format(today, 'MMM d, yyyy')}.
               </CardDescription>
             </CardHeader>
-            <CardContent className='overflow-x-auto'>
+            <CardContent className='min-w-0'>
               {departuresToday.length === 0 ? (
                 <p className='text-muted-foreground text-sm'>
                   No active departures today. Check the week view below.
@@ -374,16 +382,18 @@ export function LiveTrackingView() {
                           {b.guideId ? guideName[b.guideId] : 'Guide not assigned'}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={
-                              b.status === 'confirmed' ? 'default' : 'secondary'
+                          <AdminStatusSelect
+                            value={b.status}
+                            options={statusOptions}
+                            disabled={updateStatus.isPending}
+                            onChange={(status) =>
+                              updateStatus.mutate({ id: b.id, status })
                             }
-                          >
-                            {b.status}
-                          </Badge>
+                          />
                         </TableCell>
                         <TableCell className='text-right'>
                           <ResourceRowActions
+                            itemLabel={pkgTitle[b.packageId] ?? 'booking'}
                             onView={() => setViewB(b)}
                             onEdit={() => setEditB({ ...b })}
                             onDelete={() => setDeleteB(b)}
@@ -440,12 +450,18 @@ export function LiveTrackingView() {
                           {pkgTitle[b.packageId] ?? '—'}
                         </TableCell>
                         <TableCell>
-                          <Badge variant='outline' className='text-xs'>
-                            {b.status}
-                          </Badge>
+                          <AdminStatusSelect
+                            value={b.status}
+                            options={statusOptions}
+                            disabled={updateStatus.isPending}
+                            onChange={(status) =>
+                              updateStatus.mutate({ id: b.id, status })
+                            }
+                          />
                         </TableCell>
                         <TableCell className='text-right'>
                           <ResourceRowActions
+                            itemLabel={pkgTitle[b.packageId] ?? 'booking'}
                             onView={() => setViewB(b)}
                             onEdit={() => setEditB({ ...b })}
                             onDelete={() => setDeleteB(b)}
@@ -478,107 +494,103 @@ export function LiveTrackingView() {
         </div>
       </div>
 
-      <Dialog open={!!viewB} onOpenChange={(o) => !o && setViewB(null)}>
-        <DialogContent className='sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>Booking</DialogTitle>
-            <DialogDescription className='font-mono text-xs'>{viewB?.id}</DialogDescription>
-          </DialogHeader>
-          {viewB ? (
-            <div className='space-y-2 text-sm'>
-              <p>
-                <span className='text-muted-foreground'>Package:</span>{' '}
-                {pkgTitle[viewB.packageId] ?? viewB.packageId}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Guest:</span> {userLabel(viewB.userId)}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Start:</span> {viewB.startDate}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Total:</span>{' '}
-                {viewB.totalRwf?.toLocaleString()} Rwf
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Status:</span> {viewB.status}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Guide:</span> {guideLabel(viewB.guideId)}
-              </p>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ResourceViewDialog
+        open={!!viewB}
+        onOpenChange={(o) => !o && setViewB(null)}
+        title='Booking'
+        description={
+          viewB
+            ? `${pkgTitle[viewB.packageId] ?? viewB.packageId} · ${userLabel(viewB.userId)}`
+            : undefined
+        }
+        onEdit={viewB ? () => setEditB({ ...viewB }) : undefined}
+      >
+        {viewB ? (
+          <div className='space-y-2 text-sm'>
+            <p>
+              <span className='text-muted-foreground'>Start:</span> {viewB.startDate}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Total:</span>{' '}
+              {viewB.totalRwf?.toLocaleString()} Rwf
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Status:</span> {viewB.status}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Guide:</span> {guideLabel(viewB.guideId)}
+            </p>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
 
-      <Dialog open={!!editB} onOpenChange={(o) => !o && setEditB(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit booking</DialogTitle>
-          </DialogHeader>
-          {editB ? (
-            <form onSubmit={saveEdit} className='space-y-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='ltsd'>Start date</Label>
-                <Input
-                  id='ltsd'
-                  type='date'
-                  value={editB.startDate.slice(0, 10)}
-                  onChange={(e) => setEditB({ ...editB, startDate: e.target.value })}
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='ltto'>Total (Rwf)</Label>
-                <Input
-                  id='ltto'
-                  type='number'
-                  min={0}
-                  value={editB.totalRwf}
-                  onChange={(e) =>
-                    setEditB({ ...editB, totalRwf: Number(e.target.value) || 0 })
-                  }
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='ltst'>Status</Label>
-                <select
-                  id='ltst'
-                  className='border-input bg-background w-full rounded-md border px-3 py-2 text-sm'
-                  value={editB.status}
-                  onChange={(e) => setEditB({ ...editB, status: e.target.value })}
-                >
-                  {statusOptions.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='ltg'>Guide</Label>
-                <select
-                  id='ltg'
-                  className='border-input bg-background w-full rounded-md border px-3 py-2 text-sm'
-                  value={editB.guideId ?? ''}
-                  onChange={(e) =>
-                    setEditB({ ...editB, guideId: e.target.value || null })
-                  }
-                >
-                  <option value=''>— Unassigned —</option>
-                  {(guides as { id: string; userId: string }[]).map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {guideLabel(g.id)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Button type='submit' disabled={editSaving}>
-                {editSaving ? 'Saving…' : 'Save'}
-              </Button>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ResourceEditDialog
+        open={!!editB}
+        onOpenChange={(o) => !o && setEditB(null)}
+        title='Edit booking'
+        itemName={editB ? pkgTitle[editB.packageId] : undefined}
+        onSubmit={saveEdit}
+        saving={editSaving}
+      >
+        {editB ? (
+          <>
+            <div className='space-y-2'>
+              <Label htmlFor='ltsd'>Start date</Label>
+              <Input
+                id='ltsd'
+                type='date'
+                value={editB.startDate.slice(0, 10)}
+                onChange={(e) => setEditB({ ...editB, startDate: e.target.value })}
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='ltto'>Total (Rwf)</Label>
+              <Input
+                id='ltto'
+                type='number'
+                min={0}
+                value={editB.totalRwf}
+                onChange={(e) =>
+                  setEditB({ ...editB, totalRwf: Number(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='ltst'>Status</Label>
+              <select
+                id='ltst'
+                className='border-input bg-background w-full rounded-md border px-3 py-2 text-sm'
+                value={editB.status}
+                onChange={(e) => setEditB({ ...editB, status: e.target.value })}
+              >
+                {statusOptions.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='ltg'>Guide</Label>
+              <select
+                id='ltg'
+                className='border-input bg-background w-full rounded-md border px-3 py-2 text-sm'
+                value={editB.guideId ?? ''}
+                onChange={(e) =>
+                  setEditB({ ...editB, guideId: e.target.value || null })
+                }
+              >
+                <option value=''>— Unassigned —</option>
+                {(guides as { id: string; userId: string }[]).map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {guideLabel(g.id)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        ) : null}
+      </ResourceEditDialog>
 
       <ConfirmDialog
         open={!!deleteB}

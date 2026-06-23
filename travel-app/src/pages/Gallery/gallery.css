@@ -1,0 +1,460 @@
+/* ===== Photo Gallery Page (RwandaQuest theme) ===== */
+.gallery-page {
+  background: var(--white);
+}
+
+.gal-hero-section {
+  padding: 130px 0 48px;
+  background: var(--white);
+}
+
+.gal-page-label {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--primaryClr);
+  margin-bottom: 12px;
+}
+
+.gal-section-title {
+  margin-bottom: 20px;
+  line-height: 1.1;
+}
+
+.gal-title-script {
+  display: block;
+  font-family: var(--fontScript);
+  font-size: clamp(36px, 5vw, 52px);
+  color: var(--primaryClr);
+  font-weight: 400;
+}
+
+.gal-title-bold {
+  display: block;
+  font-family: var(--fontFamily);
+  font-size: clamp(32px, 4.5vw, 48px);
+  font-weight: 800;
+  color: var(--teal);
+  letter-spacing: -0.5px;
+}
+
+.gal-section-desc {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--textLight);
+  margin-bottom: 28px;
+  max-width: 440px;
+}
+
+.gal-stats {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.gal-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gal-stat strong {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--teal);
+  line-height: 1;
+}
+
+.gal-stat span {
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.gal-hero-image {
+  position: relative;
+  margin-left: auto;
+  max-width: 560px;
+}
+
+.gal-hero-image img {
+  width: 100%;
+  height: clamp(300px, 40vw, 440px);
+  object-fit: cover;
+  display: block;
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgba(26, 107, 107, 0.15);
+}
+
+.gal-hero-badge {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primaryClr);
+  color: #1a1a1a;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 16px;
+  border-radius: 50px;
+}
+
+/* Filter pills */
+.gal-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 48px;
+}
+
+.gal-pill {
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid var(--teal);
+  background: var(--white);
+  color: var(--teal);
+}
+
+.gal-pill:hover {
+  background: rgba(26, 107, 107, 0.06);
+}
+
+.gal-pill.active {
+  background: var(--teal);
+  color: var(--white);
+  border-color: var(--teal);
+}
+
+.gal-pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.gal-pill:not(.active) .gal-pill-count {
+  background: rgba(26, 107, 107, 0.1);
+  color: var(--teal);
+}
+
+/* Masonry grid */
+.gal-grid-section {
+  padding: 24px 0 72px;
+  background: #f9f9f9;
+}
+
+.gal-masonry {
+  column-count: 3;
+  column-gap: 20px;
+}
+
+.gal-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin-bottom: 20px;
+  break-inside: avoid;
+  border: none;
+  padding: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #e8ecec;
+  text-align: left;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.gal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.gal-card img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+  transition: transform 0.5s ease;
+}
+
+.gal-card--tall img {
+  aspect-ratio: 3 / 4;
+}
+
+.gal-card:hover img {
+  transform: scale(1.05);
+}
+
+.gal-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 79, 79, 0.92) 0%, rgba(15, 79, 79, 0.2) 55%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  color: var(--white);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.gal-card:hover .gal-card-overlay,
+.gal-card:focus-visible .gal-card-overlay {
+  opacity: 1;
+}
+
+.gal-card-category {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--primaryClr);
+  margin-bottom: 6px;
+}
+
+.gal-card-overlay h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+.gal-card-overlay p {
+  font-size: 13px;
+  margin: 0;
+  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.gal-card-zoom {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.gal-empty {
+  text-align: center;
+  padding: 64px 24px;
+  background: var(--white);
+  border-radius: 16px;
+  border: 1px dashed #dde3e3;
+}
+
+.gal-empty i {
+  font-size: 42px;
+  color: #c5cece;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.gal-empty h4 {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.gal-empty p {
+  color: #9ca3af;
+  margin-bottom: 20px;
+}
+
+/* CTA */
+.gal-cta-section {
+  position: relative;
+  padding: 72px 0;
+  background: url("../../assets/images/slider/1.jpg") no-repeat center center;
+  background-size: cover;
+  color: var(--white);
+}
+
+.gal-cta-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(15, 79, 79, 0.92), rgba(26, 107, 107, 0.88));
+  z-index: 1;
+}
+
+.gal-cta-section .container {
+  position: relative;
+  z-index: 2;
+}
+
+.gal-cta-section h2 {
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.gal-cta-section p {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 28px;
+}
+
+.gal-cta-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.gal-cta-outline {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.gal-cta-outline:hover {
+  background: var(--white);
+  color: var(--teal);
+}
+
+/* Lightbox */
+.gal-lightbox-modal .modal-content {
+  border: none;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #111;
+}
+
+.gal-lightbox-img-wrap {
+  position: relative;
+  background: #111;
+}
+
+.gal-lightbox-img-wrap img {
+  width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.gal-lightbox-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--white);
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.gal-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--white);
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s ease;
+}
+
+.gal-lightbox-nav:hover {
+  background: var(--teal);
+}
+
+.gal-lightbox-prev {
+  left: 12px;
+}
+
+.gal-lightbox-next {
+  right: 12px;
+}
+
+.gal-lightbox-caption {
+  padding: 18px 22px;
+  background: var(--white);
+}
+
+.gal-lightbox-caption h4 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #1a1a1a;
+}
+
+.gal-lightbox-caption p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .gal-masonry {
+    column-count: 2;
+  }
+
+  .gal-hero-image {
+    margin-left: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 575px) {
+  .gal-hero-section {
+    padding-top: 110px;
+  }
+
+  .gal-masonry {
+    column-count: 1;
+  }
+
+  .gal-filter-pills {
+    gap: 8px;
+  }
+
+  .gal-pill {
+    font-size: 13px;
+    padding: 8px 16px;
+  }
+}

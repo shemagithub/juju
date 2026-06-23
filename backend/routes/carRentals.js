@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { parseJson, simpleGet, simpleList } from '../lib/helpers.js'
+import { queueStatusNotification, readCurrentStatus } from '../lib/statusNotify.js'
 
 function mapCarRentalRequest(r) {
   const pd =
@@ -195,7 +196,9 @@ export function registerCarRentalRoutes(app, pool) {
       const body = req.body ?? {}
       const fields = []
       const vals = []
+      let previousStatus = null
       if (body.status !== undefined) {
+        previousStatus = await readCurrentStatus(pool, 'car_rental_requests', id)
         fields.push('status = ?')
         vals.push(String(body.status))
       }
@@ -213,6 +216,9 @@ export function registerCarRentalRoutes(app, pool) {
         `UPDATE car_rental_requests SET ${fields.join(', ')} WHERE id = ?`,
         vals,
       )
+      if (body.status !== undefined) {
+        queueStatusNotification(pool, 'car_rental_request', id, previousStatus, body.status)
+      }
       await simpleGet(
         pool,
         res,

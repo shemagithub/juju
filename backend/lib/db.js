@@ -15,6 +15,9 @@ export function createPoolFromEnv() {
     password: process.env.MYSQL_PASSWORD ?? '',
     database: process.env.MYSQL_DATABASE ?? 'tourism_admin',
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 20,
+    maxIdle: 10,
+    idleTimeout: 60_000,
+    enableKeepAlive: true,
   })
 }

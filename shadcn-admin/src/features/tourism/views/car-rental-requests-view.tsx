@@ -14,14 +14,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
+import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -41,8 +36,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { FilterField, FilterToolbar } from '@/components/shared/filter-toolbar'
 import { ResourceRowActions } from '@/components/shared/resource-row-actions'
+import { AdminStatusSelect } from '@/components/shared/admin-status-select'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
+import { CAR_RENTAL_STATUSES } from '../lib/status-options'
 import {
   type CarRentalRequestListParams,
   useCarRentalRequestsQuery,
@@ -173,6 +171,19 @@ export function TourismCarRentalRequestsPage({
   const [editSaving, setEditSaving] = useState(false)
   const [deleteR, setDeleteR] = useState<CarReq | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      await api.patch(`/api/car-rental-requests/${id}`, { status, read: true })
+    },
+    onSuccess: async () => {
+      toast.success('Status updated — customer notified by email')
+      await qc.invalidateQueries({ queryKey: ['car-rental-requests'] })
+      await qc.invalidateQueries({ queryKey: ['car-rental-requests-summary'] })
+      await qc.invalidateQueries({ queryKey: ['bootstrap'] })
+    },
+    onError: handleServerError,
+  })
 
   const mark = useMutation({
     mutationFn: async ({ id, read }: { id: string; read: boolean }) => {
@@ -401,89 +412,103 @@ export function TourismCarRentalRequestsPage({
           </CardDescription>
         </CardHeader>
         <CardContent className='space-y-4'>
-          <div className='flex flex-wrap items-end gap-3'>
-            <div className='min-w-[200px] flex-1 space-y-2'>
-              <Label htmlFor='cr-q'>Search</Label>
-              <Input
-                id='cr-q'
-                placeholder='Name, email, phone, notes…'
-                value={qInput}
-                onChange={(e) => setQInput(e.target.value)}
-              />
-            </div>
+          <FilterToolbar>
+            <FilterField className='sm:col-span-2 lg:col-span-2'>
+              <div className='space-y-2'>
+                <Label htmlFor='cr-q'>Search</Label>
+                <Input
+                  id='cr-q'
+                  placeholder='Name, email, phone, notes…'
+                  value={qInput}
+                  onChange={(e) => setQInput(e.target.value)}
+                />
+              </div>
+            </FilterField>
             {statusFilter !== 'pending' ? (
-              <div className='w-[160px] space-y-2'>
-                <Label>Status</Label>
-                <Select value={workflowFilter} onValueChange={setWorkflowFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder='Any' />
+              <FilterField>
+                <div className='space-y-2'>
+                  <Label>Status</Label>
+                  <Select value={workflowFilter} onValueChange={setWorkflowFilter}>
+                    <SelectTrigger className='w-full'>
+                      <SelectValue placeholder='Any' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All statuses</SelectItem>
+                      <SelectItem value='pending'>pending</SelectItem>
+                      <SelectItem value='contacted'>contacted</SelectItem>
+                      <SelectItem value='quoted'>quoted</SelectItem>
+                      <SelectItem value='confirmed'>confirmed</SelectItem>
+                      <SelectItem value='declined'>declined</SelectItem>
+                      <SelectItem value='cancelled'>cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </FilterField>
+            ) : null}
+            <FilterField>
+              <div className='space-y-2'>
+                <Label>Read</Label>
+                <Select
+                  value={readFilter}
+                  onValueChange={(v) => setReadFilter(v as typeof readFilter)}
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='all'>All statuses</SelectItem>
-                    <SelectItem value='pending'>pending</SelectItem>
-                    <SelectItem value='contacted'>contacted</SelectItem>
-                    <SelectItem value='quoted'>quoted</SelectItem>
-                    <SelectItem value='confirmed'>confirmed</SelectItem>
-                    <SelectItem value='declined'>declined</SelectItem>
-                    <SelectItem value='cancelled'>cancelled</SelectItem>
+                    <SelectItem value='all'>Any</SelectItem>
+                    <SelectItem value='unread'>Unread</SelectItem>
+                    <SelectItem value='read'>Read</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            ) : null}
-            <div className='w-[140px] space-y-2'>
-              <Label>Read</Label>
-              <Select
-                value={readFilter}
-                onValueChange={(v) => setReadFilter(v as typeof readFilter)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='all'>Any</SelectItem>
-                  <SelectItem value='unread'>Unread</SelectItem>
-                  <SelectItem value='read'>Read</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className='min-w-[160px] space-y-2'>
-              <Label>Vehicle slug</Label>
-              <Select value={vehicleClass} onValueChange={setVehicleClass}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='all'>Any</SelectItem>
-                  {slugOptions.map((slug) => (
-                    <SelectItem key={slug} value={slug}>
-                      {slug}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className='space-y-2'>
-              <Label htmlFor='cr-from'>Pickup from</Label>
-              <Input
-                id='cr-from'
-                type='date'
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-              />
-            </div>
-            <div className='space-y-2'>
-              <Label htmlFor='cr-to'>Pickup to</Label>
-              <Input
-                id='cr-to'
-                type='date'
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-              />
-            </div>
-            <Button type='button' variant='outline' onClick={clearFilters}>
-              Clear
-            </Button>
-          </div>
+            </FilterField>
+            <FilterField>
+              <div className='space-y-2'>
+                <Label>Vehicle slug</Label>
+                <Select value={vehicleClass} onValueChange={setVehicleClass}>
+                  <SelectTrigger className='w-full'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='all'>Any</SelectItem>
+                    {slugOptions.map((slug) => (
+                      <SelectItem key={slug} value={slug}>
+                        {slug}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </FilterField>
+            <FilterField>
+              <div className='space-y-2'>
+                <Label htmlFor='cr-from'>Pickup from</Label>
+                <Input
+                  id='cr-from'
+                  type='date'
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </div>
+            </FilterField>
+            <FilterField>
+              <div className='space-y-2'>
+                <Label htmlFor='cr-to'>Pickup to</Label>
+                <Input
+                  id='cr-to'
+                  type='date'
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </div>
+            </FilterField>
+            <FilterField className='flex items-end'>
+              <Button type='button' variant='outline' className='w-full sm:w-auto' onClick={clearFilters}>
+                Clear
+              </Button>
+            </FilterField>
+          </FilterToolbar>
 
           <div className='flex flex-wrap gap-2'>
             <Button
@@ -519,7 +544,7 @@ export function TourismCarRentalRequestsPage({
             </Button>
           </div>
 
-          <div className='overflow-x-auto'>
+          <div className='min-w-0'>
             {isPending ? (
               <p className='text-muted-foreground text-sm'>Loading…</p>
             ) : rows.length === 0 ? (
@@ -555,9 +580,14 @@ export function TourismCarRentalRequestsPage({
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={statusVariants[r.status] ?? 'secondary'}>
-                          {r.status}
-                        </Badge>
+                        <AdminStatusSelect
+                          value={r.status}
+                          options={CAR_RENTAL_STATUSES}
+                          disabled={updateStatus.isPending}
+                          onChange={(status) =>
+                            updateStatus.mutate({ id: r.id, status })
+                          }
+                        />
                       </TableCell>
                       <TableCell>
                         <Badge variant={r.read ? 'secondary' : 'default'}>
@@ -569,6 +599,7 @@ export function TourismCarRentalRequestsPage({
                       </TableCell>
                       <TableCell className='text-right'>
                         <ResourceRowActions
+                          itemLabel={r.name}
                           onView={() => setViewR(r)}
                           onEdit={() => setEditR({ ...r })}
                           onDelete={() => setDeleteR(r)}
@@ -611,13 +642,14 @@ export function TourismCarRentalRequestsPage({
         </CardContent>
       </Card>
 
-      <Dialog open={!!viewR} onOpenChange={(o) => !o && setViewR(null)}>
-        <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>Car rental request</DialogTitle>
-            <DialogDescription className='font-mono text-xs'>{viewR?.id}</DialogDescription>
-          </DialogHeader>
-          {viewR ? (
+      <ResourceViewDialog
+        open={!!viewR}
+        onOpenChange={(o) => !o && setViewR(null)}
+        title='Car rental request'
+        description={viewR ? `${viewR.name} · ${viewR.pickupDate} → ${viewR.returnDate}` : undefined}
+        onEdit={viewR ? () => setEditR({ ...viewR }) : undefined}
+      >
+        {viewR ? (
             <div className='space-y-3 text-sm'>
               <div className='flex flex-wrap gap-2'>
                 <Button variant='outline' size='sm' asChild>
@@ -721,20 +753,20 @@ export function TourismCarRentalRequestsPage({
                 Mark as {viewR.read ? 'unread' : 'read'}
               </Button>
             </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+        ) : null}
+      </ResourceViewDialog>
 
-      <Dialog open={!!editR} onOpenChange={(o) => !o && setEditR(null)}>
-        <DialogContent className='sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>Edit request</DialogTitle>
-            <DialogDescription>
-              Update pipeline status and internal notes. Customer details are read-only here.
-            </DialogDescription>
-          </DialogHeader>
-          {editR ? (
-            <form onSubmit={saveEdit} className='space-y-4'>
+      <ResourceEditDialog
+        open={!!editR}
+        onOpenChange={(o) => !o && setEditR(null)}
+        title='Edit request'
+        description='Update pipeline status and internal notes. Customer details are read-only here.'
+        itemName={editR?.name}
+        onSubmit={saveEdit}
+        saving={editSaving}
+      >
+        {editR ? (
+          <>
               <div className='rounded-md border p-3 text-sm'>
                 <p className='text-muted-foreground text-xs'>Customer</p>
                 <p className='mt-1'>
@@ -781,13 +813,9 @@ export function TourismCarRentalRequestsPage({
                   Mark as read
                 </Label>
               </div>
-              <Button type='submit' disabled={editSaving}>
-                {editSaving ? 'Saving…' : 'Save'}
-              </Button>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+          </>
+        ) : null}
+      </ResourceEditDialog>
 
       <ConfirmDialog
         open={!!deleteR}

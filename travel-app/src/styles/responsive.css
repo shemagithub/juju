@@ -1,0 +1,236 @@
+/* Site-wide responsive utilities — all pages */
+
+html {
+  overflow-x: clip;
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+img,
+video,
+svg,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.site-main {
+  overflow-x: clip;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Fluid type scale */
+@media (max-width: 767px) {
+  :root {
+    --sectionTitle: clamp(22px, 6vw, 30px);
+    --subTitle: clamp(16px, 4vw, 18px);
+    --bodyText: clamp(14px, 3.5vw, 16px);
+  }
+
+  .section-title {
+    font-size: var(--sectionTitle);
+  }
+
+  .main_heading h1,
+  .main_heading h2 {
+    font-size: var(--sectionTitle);
+  }
+}
+
+/* Touch-friendly controls */
+@media (max-width: 991px) {
+  .primaryBtn,
+  .tealBtn,
+  .secondary_btn,
+  .outlineBtn,
+  .btn {
+    min-height: 44px;
+  }
+
+  .form-control,
+  .form-select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+/* Container breathing room on small phones */
+@media (max-width: 575px) {
+  .container {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+}
+
+/* Inner-page heroes */
+@media (max-width: 991px) {
+  .packages-hero,
+  .contact-hero,
+  .blog-hero,
+  .destinations-hero,
+  .gallery-hero,
+  .about-hero,
+  .service-hero,
+  .legal-page .page-hero,
+  .pricing-page-hero {
+    padding: 130px 0 70px !important;
+  }
+}
+
+@media (max-width: 575px) {
+  .packages-hero,
+  .contact-hero,
+  .blog-hero,
+  .destinations-hero,
+  .gallery-hero,
+  .about-hero,
+  .service-hero,
+  .legal-page .page-hero,
+  .pricing-page-hero {
+    padding: 115px 0 55px !important;
+  }
+}
+
+/* CTA / hero button stacks */
+@media (max-width: 575px) {
+  .cta-buttons,
+  .hero-buttons,
+  .cr-cta-buttons,
+  .gal-cta-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 10px;
+  }
+
+  .cta-buttons > *,
+  .hero-buttons > *,
+  .cr-cta-buttons > *,
+  .gal-cta-buttons > * {
+    width: 100%;
+    margin: 0 !important;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* Bootstrap modals on phones */
+@media (max-width: 575px) {
+  .modal-dialog {
+    margin: 0.75rem auto;
+    max-width: calc(100% - 1.5rem);
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+}
+
+/* Horizontal scroll for tab/filter rows */
+.category-tabs,
+.filter-toolbar,
+.blog-category-filters,
+.cr-category-pills {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-wrap: nowrap !important;
+}
+
+.category-tabs::-webkit-scrollbar,
+.filter-toolbar::-webkit-scrollbar,
+.blog-category-filters::-webkit-scrollbar,
+.cr-category-pills::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tables & wide content */
+.table-responsive,
+.responsive-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+/* Cards never overflow viewport */
+.package-card,
+.blog-post-card,
+.destination-card,
+.service-card,
+.pricing-card,
+.cr-vehicle-card {
+  min-width: 0;
+}
+
+/* Section spacing */
+@media (max-width: 767px) {
+  .section-padding,
+  .py-5 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+}
+
+@media (max-width: 991px) {
+  .site-main {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Floating WhatsApp — clear bottom nav on mobile */
+@media (max-width: 991px) {
+  .site-whatsapp-float {
+    right: 16px;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    z-index: 99990;
+  }
+}
+
+@media (max-width: 575px) {
+  .site-whatsapp-float {
+    width: 52px;
+    height: 52px;
+    right: 12px;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Contact sticky call — avoid overlap with WhatsApp float */
+@media (max-width: 991px) {
+  .sticky-contact-buttons {
+    bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+  }
+}
+
+/* Footer subscribe */
+@media (max-width: 767px) {
+  .subscribe-bar {
+    padding: 28px 0;
+  }
+
+  .subscribe-title {
+    font-size: clamp(20px, 5vw, 24px);
+    text-align: center;
+  }
+
+  .subscribe-text {
+    text-align: center;
+  }
+}
+
+/* Offcanvas drawer full width on very small screens */
+@media (max-width: 400px) {
+  .mobile-offcanvas.offcanvas {
+    width: min(100vw, 320px);
+  }
+}

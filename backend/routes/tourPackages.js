@@ -1,5 +1,21 @@
 import { randomUUID } from 'crypto'
 import { packagesFull } from '../lib/services.js'
+import {
+  queueSubscriberContentUpdate,
+  shouldNotifyPackage,
+} from '../lib/subscriberNotify.js'
+
+function notifyPackageSubscribers(pool, pkg, updateType = 'updated') {
+  if (!shouldNotifyPackage(pkg)) return
+  const summary = String(pkg.description || '').replace(/\s+/g, ' ').trim().slice(0, 220)
+  queueSubscriberContentUpdate(pool, {
+    kind: 'package',
+    title: pkg.title,
+    summary: summary || `Duration: ${pkg.durationDays ?? '—'} days`,
+    slug: pkg.slug,
+    updateType,
+  })
+}
 
 export function registerTourPackageRoutes(app, pool) {
   app.get('/api/tour-packages', async (_req, res, next) => {
@@ -29,7 +45,7 @@ export function registerTourPackageRoutes(app, pool) {
           id,
           b.title,
           slug,
-          b.priceRwf,
+          b.priceRwf ?? 0,
           b.durationDays,
           b.description ?? '',
           JSON.stringify(b.imageUrls ?? []),
@@ -53,7 +69,9 @@ export function registerTourPackageRoutes(app, pool) {
       }
       await conn.commit()
       const all = await packagesFull(pool)
-      res.status(201).json(all.find((p) => p.id === id))
+      const created = all.find((p) => p.id === id)
+      if (created) notifyPackageSubscribers(pool, created, 'new')
+      res.status(201).json(created)
     } catch (e) {
       await conn.rollback()
       next(e)
@@ -128,6 +146,7 @@ export function registerTourPackageRoutes(app, pool) {
       const all = await packagesFull(pool)
       const one = all.find((p) => p.id === id)
       if (!one) return res.status(404).json({ error: 'Not found' })
+      notifyPackageSubscribers(pool, one, 'updated')
       res.json(one)
     } catch (e) {
       await conn.rollback()

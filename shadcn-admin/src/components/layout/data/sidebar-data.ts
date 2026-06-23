@@ -1,26 +1,20 @@
 import {
-  BarChart3,
-  Bell,
-  Calendar,
   CalendarDays,
   Car,
-  CreditCard,
   Image,
   LayoutDashboard,
+  MapPinned,
   MessageSquare,
   Mountain,
-  MapPinned,
-  Navigation,
   Newspaper,
   Package,
   Settings,
-  Shield,
+  Sparkles,
   Star,
-  UserCircle,
-  Users,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
+/** MVP sidebar — focused on day-to-day tourism operations and website control. */
 export const sidebarData: SidebarData = {
   user: {
     name: 'Admin',
@@ -36,7 +30,7 @@ export const sidebarData: SidebarData = {
   ],
   navGroups: [
     {
-      title: 'Main',
+      title: 'Home',
       items: [
         {
           title: 'Dashboard',
@@ -46,63 +40,81 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: 'Management',
+      title: 'Inbox',
       items: [
         {
-          title: 'Users',
-          icon: Users,
+          title: 'Bookings',
+          url: '/bookings',
+          icon: CalendarDays,
+        },
+        {
+          title: 'Messages',
+          url: '/messages/contact',
+          icon: MessageSquare,
+        },
+        {
+          title: 'Car rental quotes',
+          url: '/car-rental',
+          icon: Car,
+        },
+        {
+          title: 'Reviews',
+          url: '/reviews',
+          icon: Star,
+        },
+      ],
+    },
+    {
+      title: 'Website',
+      items: [
+        {
+          title: 'Home hero',
+          icon: Sparkles,
           items: [
-            { title: 'All Users', url: '/users' },
-            { title: 'Customers', url: '/users/customers' },
-            { title: 'Staff / Admins', url: '/users/staff' },
-            { title: 'Tour Guides', url: '/users/tour-guides' },
+            { title: 'All slides', url: '/website/hero' },
+            { title: 'Add slide', url: '/website/hero/new' },
           ],
         },
         {
-          title: 'Tour Packages',
+          title: 'Site settings',
+          icon: Settings,
+          items: [
+            { title: 'Contact & Brand', url: '/settings/contact' },
+            { title: 'Website content', url: '/settings/content' },
+            { title: 'About page', url: '/settings/about' },
+            { title: 'Team members', url: '/settings/team' },
+            { title: 'Navigation', url: '/settings/navigation' },
+            { title: 'SEO', url: '/settings/seo' },
+            { title: 'Legal pages', url: '/settings/legal' },
+            { title: 'Social links', url: '/settings/social' },
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Catalog',
+      items: [
+        {
+          title: 'Tour packages',
           icon: Package,
           items: [
-            { title: 'All Packages', url: '/tour-packages' },
-            { title: 'Add Package', url: '/tour-packages/new' },
-            { title: 'Package Categories', url: '/tour-packages/categories' },
-            { title: 'Itineraries', url: '/tour-packages/itineraries' },
+            { title: 'All packages', url: '/tour-packages' },
+            { title: 'Categories', url: '/tour-packages/categories' },
+            { title: 'Add package', url: '/tour-packages/new' },
           ],
         },
         {
           title: 'Destinations',
+          url: '/destinations',
           icon: MapPinned,
-          items: [
-            { title: 'All Destinations', url: '/destinations' },
-            { title: 'Add Destination', url: '/destinations/new' },
-          ],
         },
         {
-          title: 'Bookings',
-          icon: CalendarDays,
-          items: [
-            { title: 'All Bookings', url: '/bookings' },
-            { title: 'Pending', url: '/bookings/pending' },
-            { title: 'Confirmed', url: '/bookings/confirmed' },
-            { title: 'Cancelled', url: '/bookings/cancelled' },
-          ],
-        },
-        {
-          title: 'Car rental',
+          title: 'Car fleet',
           icon: Car,
           items: [
-            { title: 'Quote requests', url: '/car-rental' },
-            { title: 'Pending quotes', url: '/car-rental/pending' },
-            { title: 'Fleet vehicles', url: '/car-rental/vehicles' },
+            { title: 'All vehicles', url: '/car-rental/vehicles' },
+            { title: 'Categories', url: '/car-rental/vehicles/categories' },
             { title: 'Add vehicle', url: '/car-rental/vehicles/new' },
-          ],
-        },
-        {
-          title: 'Payments',
-          icon: CreditCard,
-          items: [
-            { title: 'Transactions', url: '/payments/transactions' },
-            { title: 'Payment Status', url: '/payments/status' },
-            { title: 'Refunds', url: '/payments/refunds' },
           ],
         },
       ],
@@ -112,102 +124,13 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: 'Blog',
+          url: '/blog',
           icon: Newspaper,
-          items: [
-            { title: 'All Posts', url: '/blog' },
-            { title: 'Add Post', url: '/blog/new' },
-            { title: 'Categories', url: '/blog/categories' },
-          ],
         },
         {
           title: 'Gallery',
+          url: '/gallery',
           icon: Image,
-          items: [
-            { title: 'All Media', url: '/gallery' },
-            { title: 'Upload Images', url: '/gallery/upload' },
-          ],
-        },
-        {
-          title: 'Reviews',
-          icon: Star,
-          items: [
-            { title: 'All Reviews', url: '/reviews' },
-            { title: 'Pending Approval', url: '/reviews/pending' },
-          ],
-        },
-        {
-          title: 'Messages',
-          icon: MessageSquare,
-          items: [
-            { title: 'Inquiries', url: '/messages/inquiries' },
-            { title: 'Contact Messages', url: '/messages/contact' },
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Operations',
-      items: [
-        {
-          title: 'Tour Guides',
-          icon: UserCircle,
-          items: [
-            { title: 'All Guides', url: '/guides' },
-            { title: 'Assign Guides', url: '/guides/assign' },
-            { title: 'Availability', url: '/guides/availability' },
-          ],
-        },
-        {
-          title: 'Calendar',
-          url: '/calendar',
-          icon: Calendar,
-        },
-        {
-          title: 'Live Tracking',
-          url: '/tracking',
-          icon: Navigation,
-        },
-        {
-          title: 'Notifications',
-          url: '/notifications',
-          icon: Bell,
-        },
-      ],
-    },
-    {
-      title: 'Analytics',
-      items: [
-        {
-          title: 'Reports',
-          icon: BarChart3,
-          items: [
-            { title: 'Revenue Reports', url: '/reports/revenue' },
-            { title: 'Booking Reports', url: '/reports/bookings' },
-            { title: 'User Analytics', url: '/reports/analytics' },
-          ],
-        },
-      ],
-    },
-    {
-      title: 'System',
-      items: [
-        {
-          title: 'Settings',
-          icon: Settings,
-          items: [
-            { title: 'General Settings', url: '/settings' },
-            { title: 'Website Content', url: '/settings/content' },
-            { title: 'SEO Settings', url: '/settings/seo' },
-            { title: 'Social Links', url: '/settings/social' },
-          ],
-        },
-        {
-          title: 'Security',
-          icon: Shield,
-          items: [
-            { title: 'Roles & Permissions', url: '/security/roles' },
-            { title: 'Activity Logs', url: '/security/activity' },
-          ],
         },
       ],
     },

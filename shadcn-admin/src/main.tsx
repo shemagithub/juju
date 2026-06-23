@@ -22,11 +22,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-        // eslint-disable-next-line no-console
-        if (import.meta.env.DEV) console.log({ failureCount, error })
-
-        if (failureCount >= 0 && import.meta.env.DEV) return false
-        if (failureCount > 3 && import.meta.env.PROD) return false
+        if (import.meta.env.DEV) return false
+        if (failureCount > 3) return false
 
         return !(
           error instanceof AxiosError &&
@@ -34,7 +31,8 @@ const queryClient = new QueryClient({
         )
       },
       refetchOnWindowFocus: import.meta.env.PROD,
-      staleTime: 10 * 1000, // 10s
+      staleTime: 30 * 1000,
+      gcTime: 5 * 60 * 1000,
     },
     mutations: {
       onError: (error) => {
@@ -88,6 +86,11 @@ declare module '@tanstack/react-router' {
 }
 
 // Render the app
+const apiBaseMeta = document.querySelector('meta[name="api-base"]')
+if (apiBaseMeta && import.meta.env.VITE_API_URL) {
+  apiBaseMeta.setAttribute('content', String(import.meta.env.VITE_API_URL))
+}
+
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)

@@ -60,9 +60,9 @@ describe('UserAuthForm', () => {
     beforeEach(async () => {
       vi.clearAllMocks()
       screen = await render(<UserAuthForm />)
-      emailInput = screen.getByRole('textbox', { name: /^Email$/i })
+      emailInput = screen.getByRole('textbox', { name: /^Staff email$/i })
       passwordInput = screen.getByLabelText(/^Password$/i)
-      signInButton = screen.getByRole('button', { name: /^Sign in$/i })
+      signInButton = screen.getByRole('button', { name: /^Sign in to portal$/i })
       forgotPasswordLink = screen.getByText(/^Forgot password\?$/i)
     })
 
@@ -115,10 +115,10 @@ describe('UserAuthForm', () => {
       <UserAuthForm redirectTo='/settings' />
     )
 
-    await userEvent.fill(getByRole('textbox', { name: /Email/i }), 'a@b.com')
+    await userEvent.fill(getByRole('textbox', { name: /Staff email/i }), 'a@b.com')
     await userEvent.fill(getByLabelText('Password'), '1234567')
 
-    await userEvent.click(getByRole('button', { name: /Sign in/i }))
+    await userEvent.click(getByRole('button', { name: /Sign in to portal/i }))
 
     await vi.waitFor(() => expect(setUserMock).toHaveBeenCalledOnce())
     expect(setAccessTokenMock).toHaveBeenCalledOnce()

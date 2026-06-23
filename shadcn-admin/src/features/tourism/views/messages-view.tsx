@@ -13,16 +13,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
+import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
 import {
   Table,
   TableBody,
@@ -142,7 +137,7 @@ export function TourismMessagesPage({
             Read state syncs to the database. Name and email are from the original submission.
           </CardDescription>
         </CardHeader>
-        <CardContent className='overflow-x-auto'>
+        <CardContent className='min-w-0'>
           {isPending ? (
             <p className='text-muted-foreground text-sm'>Loading…</p>
           ) : (
@@ -177,6 +172,7 @@ export function TourismMessagesPage({
                     </TableCell>
                     <TableCell className='text-right'>
                       <ResourceRowActions
+                        itemLabel={m.subject || m.name}
                         onView={() => setViewM(m)}
                         onEdit={() => setEditM({ ...m })}
                         onDelete={() => setDeleteM(m)}
@@ -190,94 +186,87 @@ export function TourismMessagesPage({
         </CardContent>
       </Card>
 
-      <Dialog open={!!viewM} onOpenChange={(o) => !o && setViewM(null)}>
-        <DialogContent className='sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>{viewM?.subject ?? 'Message'}</DialogTitle>
-            <DialogDescription className='font-mono text-xs'>{viewM?.id}</DialogDescription>
-          </DialogHeader>
-          {viewM ? (
-            <div className='space-y-3 text-sm'>
-              <p>
-                <span className='text-muted-foreground'>From:</span> {viewM.name} &lt;{viewM.email}
-                &gt;
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Source:</span> {viewM.source}
-              </p>
-              <div className='rounded-md border p-3'>
-                <p className='text-muted-foreground text-xs'>Body</p>
-                <p className='mt-1 whitespace-pre-wrap'>{viewM.body}</p>
-              </div>
-              <div className='flex flex-wrap items-center gap-2'>
-                <Badge variant={viewM.read ? 'secondary' : 'default'}>
-                  {viewM.read ? 'Read' : 'Unread'}
-                </Badge>
-                <span className='text-muted-foreground text-xs'>
-                  {new Date(viewM.createdAt).toLocaleString()}
-                </span>
-              </div>
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                onClick={() => mark.mutate({ id: viewM.id, read: !viewM.read })}
-              >
-                Mark as {viewM.read ? 'unread' : 'read'}
-              </Button>
+      <ResourceViewDialog
+        open={!!viewM}
+        onOpenChange={(o) => !o && setViewM(null)}
+        title={viewM?.subject ?? 'Message'}
+        description={viewM ? `${viewM.name} <${viewM.email}>` : undefined}
+        onEdit={viewM ? () => setEditM({ ...viewM }) : undefined}
+      >
+        {viewM ? (
+          <div className='space-y-3 text-sm'>
+            <p>
+              <span className='text-muted-foreground'>Source:</span> {viewM.source}
+            </p>
+            <div className='rounded-md border p-3'>
+              <p className='text-muted-foreground text-xs'>Body</p>
+              <p className='mt-1 whitespace-pre-wrap'>{viewM.body}</p>
             </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+            <div className='flex flex-wrap items-center gap-2'>
+              <Badge variant={viewM.read ? 'secondary' : 'default'}>
+                {viewM.read ? 'Read' : 'Unread'}
+              </Badge>
+              <span className='text-muted-foreground text-xs'>
+                {new Date(viewM.createdAt).toLocaleString()}
+              </span>
+            </div>
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              onClick={() => mark.mutate({ id: viewM.id, read: !viewM.read })}
+            >
+              Mark as {viewM.read ? 'unread' : 'read'}
+            </Button>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
 
-      <Dialog open={!!editM} onOpenChange={(o) => !o && setEditM(null)}>
-        <DialogContent className='sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>Edit message</DialogTitle>
-            <DialogDescription>
-              Subject and body can be adjusted for internal notes; sender fields are read-only here.
-            </DialogDescription>
-          </DialogHeader>
-          {editM ? (
-            <form onSubmit={saveEdit} className='space-y-4'>
-              <div className='rounded-md border p-3 text-sm'>
-                <p className='text-muted-foreground text-xs'>From (read-only)</p>
-                <p className='mt-1'>
-                  {editM.name} &lt;{editM.email}&gt;
-                </p>
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='msub'>Subject</Label>
-                <Input
-                  id='msub'
-                  value={editM.subject}
-                  onChange={(e) => setEditM({ ...editM, subject: e.target.value })}
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='mbody'>Body</Label>
-                <Textarea
-                  id='mbody'
-                  value={editM.body}
-                  onChange={(e) => setEditM({ ...editM, body: e.target.value })}
-                  rows={6}
-                />
-              </div>
-              <label className='flex items-center gap-2 text-sm'>
-                <input
-                  type='checkbox'
-                  checked={editM.read}
-                  onChange={(e) => setEditM({ ...editM, read: e.target.checked })}
-                />
-                Mark as read
-              </label>
-              <Button type='submit' disabled={editSaving}>
-                {editSaving ? 'Saving…' : 'Save'}
-              </Button>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ResourceEditDialog
+        open={!!editM}
+        onOpenChange={(o) => !o && setEditM(null)}
+        title='Edit message'
+        description='Subject and body can be adjusted for internal notes; sender fields are read-only here.'
+        itemName={editM?.subject || editM?.name}
+        onSubmit={saveEdit}
+        saving={editSaving}
+      >
+        {editM ? (
+          <>
+            <div className='rounded-md border p-3 text-sm'>
+              <p className='text-muted-foreground text-xs'>From (read-only)</p>
+              <p className='mt-1'>
+                {editM.name} &lt;{editM.email}&gt;
+              </p>
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='msub'>Subject</Label>
+              <Input
+                id='msub'
+                value={editM.subject}
+                onChange={(e) => setEditM({ ...editM, subject: e.target.value })}
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='mbody'>Body</Label>
+              <Textarea
+                id='mbody'
+                value={editM.body}
+                onChange={(e) => setEditM({ ...editM, body: e.target.value })}
+                rows={6}
+              />
+            </div>
+            <label className='flex items-center gap-2 text-sm'>
+              <input
+                type='checkbox'
+                checked={editM.read}
+                onChange={(e) => setEditM({ ...editM, read: e.target.checked })}
+              />
+              Mark as read
+            </label>
+          </>
+        ) : null}
+      </ResourceEditDialog>
 
       <ConfirmDialog
         open={!!deleteM}

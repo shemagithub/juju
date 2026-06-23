@@ -8,32 +8,61 @@ import { createPoolFromEnv } from './lib/db.js'
 import { registerBlogRoutes } from './routes/blog.js'
 import { registerBookingRoutes } from './routes/bookings.js'
 import {
+  ensureTourBookingRequestsTable,
+  registerBookingRequestRoutes,
+} from './routes/bookingRequests.js'
+import { DEFAULT_SITE_SETTINGS } from './lib/defaultSiteSettings.js'
+import {
   ensureCarRentalVehiclesTable,
   registerCarRentalFleetRoutes,
 } from './routes/carRentalFleet.js'
+import {
+  ensureCarRentalVehicleCategoriesTable,
+  registerCarRentalVehicleCategoryRoutes,
+} from './routes/carRentalVehicleCategories.js'
 import { ensureCarRentalRequestsTable, registerCarRentalRoutes } from './routes/carRentals.js'
 import { registerBootstrapRoute } from './routes/bootstrap.js'
-import { registerDestinationRoutes } from './routes/destinations.js'
+import {
+  backfillDestinationDefaults,
+  ensureDestinationExtendedColumns,
+  registerDestinationRoutes,
+  seedDefaultDestinations,
+} from './routes/destinations.js'
 import { registerExtraRoutes } from './routes/extra.js'
 import { registerGalleryRoutes } from './routes/gallery.js'
+import { ensureHeroSlidesTable, registerHeroSlideRoutes } from './routes/heroSlides.js'
+import { ensureTeamMembersTable, registerTeamMemberRoutes } from './routes/teamMembers.js'
 import { registerGuideRoutes } from './routes/guides.js'
 import { registerMessageRoutes } from './routes/messages.js'
+import {
+  ensureNewsletterSubscribersTable,
+  registerSubscriberRoutes,
+} from './routes/subscribers.js'
 import { registerPackageCategoryRoutes } from './routes/packageCategories.js'
+import { ensurePricingTables, registerPricingPlanRoutes } from './routes/pricingPlans.js'
 import { registerPaymentRoutes } from './routes/payments.js'
-import { registerReviewRoutes } from './routes/reviews.js'
+import { ensureReviewsTable, registerReviewRoutes } from './routes/reviews.js'
 import { registerAuthRoutes } from './routes/auth.js'
 import { registerTourPackageRoutes } from './routes/tourPackages.js'
 import { registerUploadRoutes } from './routes/uploads.js'
 import { registerUserRoutes } from './routes/users.js'
 
 const port = Number(process.env.PORT) || 4000
+const DEFAULT_CORS_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://rwandaquesttours.com',
+  'https://www.rwandaquesttours.com',
+  'https://admin.rwandaquesttours.com',
+]
+
 function parseCorsOrigins(raw) {
-  const s = (raw ?? 'http://localhost:5173,http://localhost:3000').trim()
-  if (!s.includes(',')) return s
-  return s
+  const s = (raw ?? DEFAULT_CORS_ORIGINS.join(',')).trim()
+  const list = s
     .split(',')
-    .map((x) => x.trim())
+    .map((x) => x.trim().replace(/\/$/, ''))
     .filter(Boolean)
+  return list.length === 1 ? list[0] : [...new Set(list)]
 }
 
 const corsOrigin = parseCorsOrigins(process.env.CORS_ORIGIN)
@@ -67,7 +96,21 @@ async function ensureSingletonSettingsTables() {
       CONSTRAINT chk_singleton CHECK (singleton = 1)
     )
   `)
-  await pool.query(`INSERT IGNORE INTO site_settings (singleton, payload) VALUES (1, '{}')`)
+  await pool.query(
+    `INSERT IGNORE INTO site_settings (singleton, payload) VALUES (1, ?)`,
+    [JSON.stringify(DEFAULT_SITE_SETTINGS)],
+  )
+  const [siteRows] = await pool.query(
+    'SELECT payload FROM site_settings WHERE singleton = 1 LIMIT 1',
+  )
+  const currentSite = JSON.parse(siteRows[0]?.payload ?? '{}')
+  const { mergeSiteSettingsDefaults } = await import('./lib/defaultSiteSettings.js')
+  const mergedSite = mergeSiteSettingsDefaults(currentSite)
+  if (JSON.stringify(mergedSite) !== JSON.stringify(currentSite)) {
+    await pool.query('UPDATE site_settings SET payload = ? WHERE singleton = 1', [
+      JSON.stringify(mergedSite),
+    ])
+  }
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS admin_settings (
@@ -123,14 +166,20 @@ registerPackageCategoryRoutes(app, pool)
 registerDestinationRoutes(app, pool)
 registerTourPackageRoutes(app, pool)
 registerBookingRoutes(app, pool)
+registerBookingRequestRoutes(app, pool)
 registerCarRentalRoutes(app, pool)
 registerCarRentalFleetRoutes(app, pool)
+registerCarRentalVehicleCategoryRoutes(app, pool)
 registerPaymentRoutes(app, pool)
+registerPricingPlanRoutes(app, pool)
 registerMessageRoutes(app, pool)
+registerSubscriberRoutes(app, pool)
 registerReviewRoutes(app, pool)
 registerBlogRoutes(app, pool)
 registerGalleryRoutes(app, pool)
 registerGuideRoutes(app, pool)
+registerHeroSlideRoutes(app, pool)
+registerTeamMemberRoutes(app, pool)
 registerExtraRoutes(app, pool)
 registerBootstrapRoute(app, pool)
 
@@ -157,6 +206,16 @@ async function ensureSchemaGuards() {
   await ensureSingletonSettingsTables()
   await ensureCarRentalRequestsTable(pool)
   await ensureCarRentalVehiclesTable(pool)
+  await ensureCarRentalVehicleCategoriesTable(pool)
+  await ensureTourBookingRequestsTable(pool)
+  await ensureDestinationExtendedColumns(pool)
+  await seedDefaultDestinations(pool)
+  await backfillDestinationDefaults(pool)
+  await ensureHeroSlidesTable(pool)
+  await ensureTeamMembersTable(pool)
+  await ensureReviewsTable(pool)
+  await ensurePricingTables(pool)
+  await ensureNewsletterSubscribersTable(pool)
 }
 
 ensureSchemaGuards().catch((err) => {

@@ -1,28 +1,88 @@
 import { randomUUID } from 'crypto'
 import { parseJson, simpleGet, simpleList } from '../lib/helpers.js'
+import {
+  queueSubscriberContentUpdate,
+  shouldNotifyCarVehicle,
+} from '../lib/subscriberNotify.js'
+
+function notifyCarSubscribers(pool, vehicle, updateType = 'updated') {
+  if (!shouldNotifyCarVehicle(vehicle)) return
+  const title = vehicle.vehicleName || vehicle.title || 'Car rental vehicle'
+  const summary =
+    String(vehicle.blurb || vehicle.description || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 220) ||
+    (vehicle.dailyPriceUsd ? `From $${vehicle.dailyPriceUsd}/day` : 'Updated on our car rental fleet.')
+  queueSubscriberContentUpdate(pool, {
+    kind: 'car-rental',
+    title,
+    summary,
+    slug: vehicle.slug,
+    updateType,
+  })
+}
+import {
+  VEHICLE_EXTENDED_COLS,
+  VEHICLE_INSERT_COLS,
+  buildVehicleInsertRow,
+  buildVehiclePatchFields,
+  mapCarRentalVehicle,
+  normalizeVehicleCategoryKey,
+  sortVehicleCategories,
+  vehicleCategoryLabel,
+} from '../lib/carRentalVehicleFields.js'
+import { listCarRentalVehicleCategories } from './carRentalVehicleCategories.js'
 
 const DEFAULT_SEED_ROWS = [
   {
     slug: 'economy',
     title: 'Economy',
+    vehicle_name: 'Toyota Yaris 1.5 Hybrid',
+    brand: 'Toyota',
+    model: 'Yaris',
+    year: 2022,
+    category: 'economy',
     badge: 'City & airport',
     blurb: 'Ideal for Kigali city runs, meetings, and short transfers.',
+    description:
+      'Efficient hybrid city car for airport transfers, meetings, and short Kigali itineraries.',
     daily_price_usd: 35,
+    transmission: 'Automatic',
+    fuel_type: 'Petrol',
+    engine_capacity: '1.5L Hybrid',
+    seats: 4,
+    doors: 4,
+    luggage_capacity: '2 large bags',
     specs_json: [
       { icon: 'bi-people', text: '4 seats' },
       { icon: 'bi-suitcase2', text: '2 bags' },
       { icon: 'bi-fuel-pump', text: 'Petrol, efficient' },
-      { icon: 'bi-gear', text: 'Manual / Auto' },
+      { icon: 'bi-gear', text: 'Automatic' },
     ],
     image_url: '',
     sort_order: 10,
+    airport_transfer_vehicle: 1,
+    self_drive_available: 1,
   },
   {
     slug: 'suv',
     title: 'Compact SUV',
+    vehicle_name: 'Toyota RAV4 2.5 AWD',
+    brand: 'Toyota',
+    model: 'RAV4',
+    year: 2021,
+    category: 'suv',
     badge: 'Family & comfort',
     blurb: 'Room for family luggage and lake or park drives in comfort.',
+    description: 'Comfortable AWD SUV for families exploring Rwanda beyond Kigali.',
     daily_price_usd: 75,
+    transmission: 'Automatic',
+    fuel_type: 'Petrol',
+    engine_capacity: '2.5L',
+    seats: 5,
+    doors: 5,
+    luggage_capacity: '4 large bags',
     specs_json: [
       { icon: 'bi-people', text: '5 seats' },
       { icon: 'bi-suitcase2', text: '4 bags' },
@@ -31,13 +91,26 @@ const DEFAULT_SEED_ROWS = [
     ],
     image_url: '',
     sort_order: 20,
+    self_drive_available: 1,
   },
   {
     slug: 'fourbyfour',
     title: '4×4 Safari',
+    vehicle_name: 'Toyota Land Cruiser 4×4',
+    brand: 'Toyota',
+    model: 'Land Cruiser',
+    year: 2020,
+    category: 'safari',
     badge: 'Safari & parks',
     blurb: 'Built for Volcanoes, Akagera, and Nyungwe access roads.',
+    description: 'Rugged safari 4×4 approved for national park access roads across Rwanda.',
     daily_price_usd: 120,
+    transmission: 'Automatic',
+    fuel_type: 'Diesel',
+    engine_capacity: '4.0L',
+    seats: 7,
+    doors: 5,
+    luggage_capacity: '6 large bags',
     specs_json: [
       { icon: 'bi-people', text: '5–7 seats' },
       { icon: 'bi-tree', text: 'Wildlife & unpaved roads' },
@@ -46,13 +119,28 @@ const DEFAULT_SEED_ROWS = [
     ],
     image_url: '',
     sort_order: 30,
+    tourist_safari_vehicle: 1,
+    gps_installed: 1,
+    driver_included: 1,
   },
   {
     slug: 'luxury',
     title: 'Luxury SUV',
+    vehicle_name: 'Range Rover Sport 3.0 SDV6',
+    brand: 'Land Rover',
+    model: 'Range Rover Sport',
+    year: 2023,
+    category: 'luxury',
     badge: 'Executive',
     blurb: 'Business delegations, VIP airport pickups, and bespoke itineraries.',
+    description: 'Executive luxury SUV with chauffeur option for VIP travel in Rwanda.',
     daily_price_usd: 180,
+    transmission: 'Automatic',
+    fuel_type: 'Diesel',
+    engine_capacity: '3.0L',
+    seats: 5,
+    doors: 5,
+    luggage_capacity: '4 large bags',
     specs_json: [
       { icon: 'bi-people', text: '4–5 seats' },
       { icon: 'bi-star', text: 'Leather, premium sound' },
@@ -61,29 +149,48 @@ const DEFAULT_SEED_ROWS = [
     ],
     image_url: '',
     sort_order: 40,
+    featured: 1,
+    airport_transfer_vehicle: 1,
+    driver_included: 1,
   },
 ]
 
-function toIsoTs(v) {
-  if (v == null || v === '')
-    return new Date().toISOString()
-  const t = new Date(v).getTime()
-  return Number.isFinite(t) ? new Date(t).toISOString() : new Date().toISOString()
+export { mapCarRentalVehicle }
+
+export async function ensureCarRentalVehiclesExtendedColumns(pool) {
+  for (const [name, def] of VEHICLE_EXTENDED_COLS) {
+    try {
+      await pool.query(`ALTER TABLE car_rental_vehicles ADD COLUMN ${name} ${def}`)
+    } catch (e) {
+      const code = e?.code ?? ''
+      const msg = String(e?.message ?? '')
+      if (code !== 'ER_DUP_FIELDNAME' && !/Duplicate column/i.test(msg)) throw e
+    }
+  }
 }
 
-export function mapCarRentalVehicle(r) {
-  return {
-    id: r.id,
-    slug: r.slug,
-    title: r.title,
-    badge: r.badge,
-    blurb: r.blurb ?? '',
-    dailyPriceUsd: Number(r.daily_price_usd),
-    specs: parseJson(r.specs_json, []),
-    imageUrl: r.image_url ?? '',
-    active: !!r.active_flag,
-    sortOrder: Number(r.sort_order ?? 0),
-    updatedAt: toIsoTs(r.updated_at),
+export async function backfillCarRentalVehicleDefaults(pool) {
+  const [rows] = await pool.query(
+    'SELECT id, title, blurb, vehicle_name, description, category, slug FROM car_rental_vehicles',
+  )
+  for (const row of rows) {
+    const patches = []
+    const vals = []
+    if (!String(row.vehicle_name ?? '').trim()) {
+      patches.push('vehicle_name = ?')
+      vals.push(String(row.title ?? '').trim())
+    }
+    if (!String(row.description ?? '').trim()) {
+      patches.push('description = ?')
+      vals.push(String(row.blurb ?? row.title ?? '').trim())
+    }
+    if (!String(row.category ?? '').trim() && row.slug) {
+      patches.push('category = ?')
+      vals.push(String(row.slug).trim())
+    }
+    if (!patches.length) continue
+    vals.push(row.id)
+    await pool.query(`UPDATE car_rental_vehicles SET ${patches.join(', ')} WHERE id = ?`, vals)
   }
 }
 
@@ -119,30 +226,95 @@ export async function ensureCarRentalVehiclesTable(pool) {
     if (!dupCol) console.warn('[car-rental-vehicles] alter updated_at skipped:', code || e?.message)
   }
 
-  const [countRows] = await pool.query(
-    'SELECT COUNT(*) AS n FROM car_rental_vehicles',
-  )
+  await ensureCarRentalVehiclesExtendedColumns(pool)
+  await backfillCarRentalVehicleDefaults(pool)
+
+  const [countRows] = await pool.query('SELECT COUNT(*) AS n FROM car_rental_vehicles')
   if (Number(countRows[0]?.n) > 0) return
 
   for (const row of DEFAULT_SEED_ROWS) {
+    const id = randomUUID()
+    const insertRow = buildVehicleInsertRow(
+      {
+        ...row,
+        dailyRate: row.daily_price_usd,
+        fuelType: row.fuel_type,
+        engineCapacity: row.engine_capacity,
+        luggageCapacity: row.luggage_capacity,
+        specs: row.specs_json,
+        airportTransferVehicle: !!row.airport_transfer_vehicle,
+        touristSafariVehicle: !!row.tourist_safari_vehicle,
+        selfDriveAvailable: row.self_drive_available !== 0,
+        driverIncluded: !!row.driver_included,
+        gpsInstalled: !!row.gps_installed,
+        featured: !!row.featured,
+        active: true,
+      },
+      id,
+    )
+    const placeholders = VEHICLE_INSERT_COLS.map(() => '?').join(', ')
     await pool.query(
-      `INSERT INTO car_rental_vehicles (
-        id, slug, title, badge, blurb, daily_price_usd, specs_json, image_url, active_flag, sort_order
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
-      [
-        randomUUID(),
-        row.slug,
-        row.title,
-        row.badge,
-        row.blurb,
-        row.daily_price_usd,
-        JSON.stringify(row.specs_json),
-        row.image_url,
-        row.sort_order,
-      ],
+      `INSERT INTO car_rental_vehicles (${VEHICLE_INSERT_COLS.join(', ')}) VALUES (${placeholders})`,
+      VEHICLE_INSERT_COLS.map((c) => insertRow[c]),
     )
   }
 }
+
+function duplicateRowToInsert(row, newId, newSlug, newTitle) {
+  const gallery = parseJson(row.gallery_urls_json, [])
+  const galleryUrls = Array.isArray(gallery) ? gallery : []
+  return buildVehicleInsertRow(
+    {
+      slug: newSlug,
+      title: newTitle,
+      vehicleName: `${String(row.vehicle_name || row.title).trim()} (copy)`,
+      brand: row.brand,
+      model: row.model,
+      year: row.year,
+      category: row.category,
+      badge: row.badge,
+      blurb: row.blurb,
+      description: row.description,
+      transmission: row.transmission,
+      fuelType: row.fuel_type,
+      engineCapacity: row.engine_capacity,
+      seats: row.seats,
+      doors: row.doors,
+      airConditioning: !!row.air_conditioning,
+      luggageCapacity: row.luggage_capacity,
+      dailyRate: row.daily_price_usd,
+      weeklyRate: row.weekly_rate,
+      monthlyRate: row.monthly_rate,
+      driverFee: row.driver_fee,
+      deposit: row.deposit,
+      status: row.status,
+      plateNumber: '',
+      registrationExpiry: null,
+      insuranceExpiry: null,
+      pickupLocations: parseJson(row.pickup_locations_json, []),
+      deliveryAvailable: !!row.delivery_available,
+      deliveryFee: row.delivery_fee,
+      featured: false,
+      driverIncluded: !!row.driver_included,
+      driverLanguages: parseJson(row.driver_languages_json, []),
+      airportTransferVehicle: !!row.airport_transfer_vehicle,
+      touristSafariVehicle: !!row.tourist_safari_vehicle,
+      selfDriveAvailable: row.self_drive_available == null ? true : !!row.self_drive_available,
+      unlimitedMileageOption: !!row.unlimited_mileage_option,
+      gpsInstalled: !!row.gps_installed,
+      popularBadge: false,
+      specs: parseJson(row.specs_json, []),
+      galleryUrls,
+      imageUrl: row.image_url,
+      active: false,
+      sortOrder: Number(row.sort_order ?? 0) + 5,
+    },
+    newId,
+  )
+}
+
+const SEARCH_COLS =
+  'title, slug, badge, blurb, vehicle_name, brand, model, category, plate_number, COALESCE(image_url, "")'
 
 export function registerCarRentalFleetRoutes(app, pool) {
   app.get('/api/car-rental-vehicles/summary', async (_req, res, next) => {
@@ -163,14 +335,82 @@ export function registerCarRentalFleetRoutes(app, pool) {
     }
   })
 
-  app.get('/api/car-rental-vehicles/catalog', async (_req, res, next) => {
+  app.get('/api/car-rental-vehicles/categories', async (_req, res, next) => {
     try {
-      await simpleList(
+      const managed = await listCarRentalVehicleCategories(pool, { activeOnly: true })
+      const [vehicleRows] = await pool.query(
+        `SELECT LOWER(TRIM(category)) AS cat_key, COUNT(*) AS cnt
+         FROM car_rental_vehicles
+         WHERE active_flag = 1
+         GROUP BY LOWER(TRIM(category))`,
+      )
+      const countByKey = Object.fromEntries(
+        vehicleRows.map((r) => [normalizeVehicleCategoryKey(r.cat_key), Number(r.cnt ?? 0)]),
+      )
+      const managedSlugs = new Set(managed.map((c) => c.slug))
+      const categories = managed.map((c) => ({
+        key: c.slug,
+        label: c.name,
+        count: countByKey[c.slug] ?? 0,
+      }))
+      let otherCount = 0
+      for (const [key, count] of Object.entries(countByKey)) {
+        if (!managedSlugs.has(key)) otherCount += count
+      }
+      if (otherCount > 0) {
+        categories.push({
+          key: 'other',
+          label: vehicleCategoryLabel('other'),
+          count: otherCount,
+        })
+      }
+      const total = categories.reduce((sum, c) => sum + c.count, 0)
+      res.json({ total, categories: sortVehicleCategories(categories) })
+    } catch (e) {
+      next(e)
+    }
+  })
+
+  app.get('/api/car-rental-vehicles/catalog', async (req, res, next) => {
+    try {
+      const category = normalizeVehicleCategoryKey(req.query.category)
+      let sql = 'SELECT * FROM car_rental_vehicles WHERE active_flag = 1'
+      const vals = []
+      if (req.query.category && String(req.query.category).trim() && category !== 'other') {
+        sql += ' AND LOWER(TRIM(category)) = ?'
+        vals.push(category)
+      } else if (req.query.category && String(req.query.category).trim() && category === 'other') {
+        sql += " AND (category IS NULL OR TRIM(category) = '')"
+      }
+      sql += ' ORDER BY sort_order ASC, title ASC'
+      const [rows] = await pool.query(sql, vals)
+      res.json(rows.map(mapCarRentalVehicle))
+    } catch (e) {
+      next(e)
+    }
+  })
+
+  app.get('/api/car-rental-vehicles/catalog/:slug', async (req, res, next) => {
+    try {
+      const slug = String(req.params.slug ?? '').trim().toLowerCase()
+      if (!slug) return res.status(400).json({ error: 'Slug required' })
+      await simpleGet(
         pool,
         res,
-        'SELECT * FROM car_rental_vehicles WHERE active_flag = 1 ORDER BY sort_order ASC, title ASC',
+        'SELECT * FROM car_rental_vehicles WHERE active_flag = 1 AND slug = ? LIMIT 1',
+        slug,
         mapCarRentalVehicle,
       )
+    } catch (e) {
+      next(e)
+    }
+  })
+
+  app.get('/api/car-rental-vehicles/:id', async (req, res, next) => {
+    try {
+      const id = String(req.params.id ?? '').trim()
+      if (!id) return res.status(400).json({ error: 'ID required' })
+      await simpleGet(pool, res, 'SELECT * FROM car_rental_vehicles WHERE id = ? LIMIT 1', id, mapCarRentalVehicle)
     } catch (e) {
       next(e)
     }
@@ -188,9 +428,8 @@ export function registerCarRentalFleetRoutes(app, pool) {
       }
       if (q.q && String(q.q).trim()) {
         const qq = `%${String(q.q).trim()}%`
-        sql +=
-          ' AND (title LIKE ? OR slug LIKE ? OR badge LIKE ? OR blurb LIKE ? OR COALESCE(image_url, "") LIKE ?)'
-        vals.push(qq, qq, qq, qq, qq)
+        sql += ` AND (${SEARCH_COLS.split(', ').map((c) => `${c} LIKE ?`).join(' OR ')})`
+        for (let i = 0; i < SEARCH_COLS.split(', ').length; i += 1) vals.push(qq)
       }
       sql += ' ORDER BY sort_order ASC, title ASC'
       const limit = Math.min(Math.max(Number(q.limit) || 500, 1), 500)
@@ -215,28 +454,11 @@ export function registerCarRentalFleetRoutes(app, pool) {
       if (!/^[a-z0-9-]{1,64}$/.test(slug)) slug = `copy-${randomUUID().slice(0, 13)}`
 
       const nid = randomUUID()
-      let specsSrc = row.specs_json
-      let specsArr
-      if (typeof specsSrc === 'string') specsArr = parseJson(specsSrc, [])
-      else if (Array.isArray(specsSrc)) specsArr = specsSrc
-      else specsArr = parseJson(specsSrc, [])
-      const specs = JSON.stringify(Array.isArray(specsArr) ? specsArr : [])
+      const insertRow = duplicateRowToInsert(row, nid, slug, `${String(row.title).trim()} (copy)`)
+      const placeholders = VEHICLE_INSERT_COLS.map(() => '?').join(', ')
       await pool.query(
-        `INSERT INTO car_rental_vehicles (
-          id, slug, title, badge, blurb, daily_price_usd, specs_json, image_url, active_flag, sort_order
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          nid,
-          slug,
-          `${String(row.title).trim()} (copy)`,
-          String(row.badge ?? '').trim(),
-          String(row.blurb ?? '').trim(),
-          Number(row.daily_price_usd),
-          specs,
-          String(row.image_url ?? '').trim(),
-          0,
-          Number(row.sort_order ?? 0) + 5,
-        ],
+        `INSERT INTO car_rental_vehicles (${VEHICLE_INSERT_COLS.join(', ')}) VALUES (${placeholders})`,
+        VEHICLE_INSERT_COLS.map((c) => insertRow[c]),
       )
       const [ins] = await pool.query('SELECT * FROM car_rental_vehicles WHERE id = ?', [nid])
       res.status(201).json(mapCarRentalVehicle(ins[0]))
@@ -248,43 +470,28 @@ export function registerCarRentalFleetRoutes(app, pool) {
   app.post('/api/car-rental-vehicles', async (req, res, next) => {
     try {
       const b = req.body ?? {}
-      const slug = String(b.slug ?? '')
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-      if (!slug || !/^[a-z0-9-]{1,64}$/.test(slug)) {
-        return res.status(400).json({ error: 'Valid slug required (lowercase letters, numbers, hyphen)' })
-      }
-      const title = String(b.title ?? '').trim()
-      if (!title) return res.status(400).json({ error: 'Title is required' })
       const id = b.id ?? randomUUID()
-      const specs =
-        Array.isArray(b.specs) && b.specs.length ? b.specs : [{ icon: 'bi-info-circle', text: 'See description' }]
-      const rawUsd = Number(b.dailyPriceUsd ?? 0)
-      const dailyUsd =
-        Number.isFinite(rawUsd) && rawUsd >= 0 ? Math.min(rawUsd, 999999999.99) : 0
-      const sortN = Number(b.sortOrder ?? 0)
-      const img = String(b.imageUrl ?? '').trim().slice(0, 2048)
-
+      let insertRow
+      try {
+        insertRow = buildVehicleInsertRow(b, id)
+      } catch (err) {
+        if (err?.message === 'INVALID_SLUG') {
+          return res.status(400).json({ error: 'Valid slug required (lowercase letters, numbers, hyphen)' })
+        }
+        if (err?.message === 'TITLE_REQUIRED') {
+          return res.status(400).json({ error: 'Title is required' })
+        }
+        throw err
+      }
+      const placeholders = VEHICLE_INSERT_COLS.map(() => '?').join(', ')
       await pool.query(
-        `INSERT INTO car_rental_vehicles (
-          id, slug, title, badge, blurb, daily_price_usd, specs_json, image_url, active_flag, sort_order
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          id,
-          slug,
-          title,
-          String(b.badge ?? '').trim(),
-          String(b.blurb ?? '').trim(),
-          dailyUsd,
-          JSON.stringify(specs),
-          img,
-          b.active === false ? 0 : 1,
-          Number.isFinite(sortN) ? sortN : 0,
-        ],
+        `INSERT INTO car_rental_vehicles (${VEHICLE_INSERT_COLS.join(', ')}) VALUES (${placeholders})`,
+        VEHICLE_INSERT_COLS.map((c) => insertRow[c]),
       )
       const [rows] = await pool.query('SELECT * FROM car_rental_vehicles WHERE id = ?', [id])
-      res.status(201).json(mapCarRentalVehicle(rows[0]))
+      const vehicle = mapCarRentalVehicle(rows[0])
+      notifyCarSubscribers(pool, vehicle, 'new')
+      res.status(201).json(vehicle)
     } catch (e) {
       if (String(e?.code) === 'ER_DUP_ENTRY') {
         return res.status(409).json({ error: 'Slug already exists' })
@@ -296,61 +503,24 @@ export function registerCarRentalFleetRoutes(app, pool) {
   app.patch('/api/car-rental-vehicles/:id', async (req, res, next) => {
     try {
       const id = String(req.params.id)
-      const body = req.body ?? {}
-      const fields = []
-      const vals = []
-
-      if (body.slug !== undefined) {
-        const slug = String(body.slug)
-          .trim()
-          .toLowerCase()
-          .replace(/\s+/g, '-')
-        if (!/^[a-z0-9-]{1,64}$/.test(slug)) {
+      let patch
+      try {
+        patch = buildVehiclePatchFields(req.body ?? {})
+      } catch (err) {
+        if (err?.message === 'INVALID_SLUG') {
           return res.status(400).json({ error: 'Invalid slug format' })
         }
-        fields.push('slug = ?')
-        vals.push(slug)
+        throw err
       }
-      if (body.title !== undefined) {
-        fields.push('title = ?')
-        vals.push(String(body.title).trim())
-      }
-      if (body.badge !== undefined) {
-        fields.push('badge = ?')
-        vals.push(String(body.badge ?? '').trim())
-      }
-      if (body.blurb !== undefined) {
-        fields.push('blurb = ?')
-        vals.push(String(body.blurb ?? '').trim())
-      }
-      if (body.dailyPriceUsd !== undefined) {
-        fields.push('daily_price_usd = ?')
-        vals.push(Number(body.dailyPriceUsd))
-      }
-      if (body.specs !== undefined) {
-        fields.push('specs_json = ?')
-        vals.push(JSON.stringify(Array.isArray(body.specs) ? body.specs : []))
-      }
-      if (body.imageUrl !== undefined) {
-        fields.push('image_url = ?')
-        vals.push(String(body.imageUrl ?? '').trim())
-      }
-      if (body.active !== undefined) {
-        fields.push('active_flag = ?')
-        vals.push(body.active ? 1 : 0)
-      }
-      if (body.sortOrder !== undefined) {
-        fields.push('sort_order = ?')
-        vals.push(Number(body.sortOrder))
-      }
-
+      const { fields, vals } = patch
       if (!fields.length) return res.status(400).json({ error: 'No fields' })
       vals.push(id)
-      await pool.query(
-        `UPDATE car_rental_vehicles SET ${fields.join(', ')} WHERE id = ?`,
-        vals,
-      )
-      await simpleGet(pool, res, 'SELECT * FROM car_rental_vehicles WHERE id = ?', id, mapCarRentalVehicle)
+      await pool.query(`UPDATE car_rental_vehicles SET ${fields.join(', ')} WHERE id = ?`, vals)
+      const [rows] = await pool.query('SELECT * FROM car_rental_vehicles WHERE id = ?', [id])
+      if (!rows[0]) return res.status(404).json({ error: 'Not found' })
+      const vehicle = mapCarRentalVehicle(rows[0])
+      notifyCarSubscribers(pool, vehicle, 'updated')
+      res.json(vehicle)
     } catch (e) {
       if (String(e?.code) === 'ER_DUP_ENTRY') {
         return res.status(409).json({ error: 'Slug already exists' })

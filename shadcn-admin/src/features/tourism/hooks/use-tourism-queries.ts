@@ -101,6 +101,71 @@ export function useCarRentalVehiclesQuery(params: CarRentalVehicleListParams = {
   })
 }
 
+export function useCarRentalVehicleQuery(vehicleId?: string) {
+  return useQuery({
+    queryKey: ['car-rental-vehicle', vehicleId],
+    enabled: Boolean(vehicleId),
+    queryFn: async () => (await api.get(`/api/car-rental-vehicles/${vehicleId}`)).data,
+  })
+}
+
+export type CarRentalVehicleCategory = {
+  id: string
+  name: string
+  slug: string
+  sortOrder: number
+  active: boolean
+  vehicleCount: number
+}
+
+export function useCarRentalVehicleCategoriesQuery(activeOnly = false) {
+  return useQuery({
+    queryKey: ['car-rental-vehicle-categories', activeOnly ? 'active' : 'all'],
+    queryFn: async (): Promise<CarRentalVehicleCategory[]> =>
+      (
+        await api.get('/api/car-rental-vehicle-categories', {
+          params: activeOnly ? { active: 'true' } : undefined,
+        })
+      ).data,
+  })
+}
+
+export function useHeroSlidesQuery(publicOnly = false) {
+  return useQuery({
+    queryKey: ['hero-slides', publicOnly ? 'public' : 'all'],
+    queryFn: async () =>
+      (
+        await api.get('/api/hero-slides', {
+          params: publicOnly ? { public: 'true' } : undefined,
+        })
+      ).data,
+  })
+}
+
+export function useTeamMembersQuery(publicOnly = false) {
+  return useQuery({
+    queryKey: ['team-members', publicOnly ? 'public' : 'all'],
+    queryFn: async () =>
+      (
+        await api.get('/api/team-members', {
+          params: publicOnly ? { public: 'true' } : undefined,
+        })
+      ).data,
+  })
+}
+
+export function usePricingQuery(publicOnly = false) {
+  return useQuery({
+    queryKey: ['pricing', publicOnly ? 'public' : 'all'],
+    queryFn: async () =>
+      (
+        await api.get('/api/pricing', {
+          params: publicOnly ? { public: 'true' } : undefined,
+        })
+      ).data,
+  })
+}
+
 export function usePaymentsQuery() {
   return useQuery({
     queryKey: ['payments'],
@@ -175,5 +240,32 @@ export function useSiteSettingsQuery() {
   return useQuery({
     queryKey: ['site-settings'],
     queryFn: async () => (await api.get('/api/site-settings')).data,
+  })
+}
+
+export type TourBookingRequestsSummary = {
+  total: number
+  unread: number
+  byStatus: Record<string, number>
+}
+
+export function useTourBookingRequestsSummaryQuery(enabled = true) {
+  return useQuery({
+    queryKey: ['tour-booking-requests-summary'],
+    enabled,
+    queryFn: async (): Promise<TourBookingRequestsSummary> =>
+      (await api.get('/api/tour-booking-requests/summary')).data,
+  })
+}
+
+export function useTourBookingRequestsQuery(params: {
+  status?: string
+  read?: 'true' | 'false'
+  q?: string
+} = {}) {
+  return useQuery({
+    queryKey: ['tour-booking-requests', params],
+    queryFn: async () =>
+      (await api.get('/api/tour-booking-requests', { params })).data,
   })
 }

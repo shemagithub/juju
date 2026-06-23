@@ -146,7 +146,7 @@ export function TourismSecurityPage({
             Permissions are string tokens checked by your API gateway later.
           </CardDescription>
         </CardHeader>
-        <CardContent className='overflow-x-auto'>
+        <CardContent className='min-w-0'>
           {rPending ? (
             <p className='text-muted-foreground text-sm'>Loading…</p>
           ) : (

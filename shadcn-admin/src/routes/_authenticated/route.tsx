@@ -12,7 +12,7 @@ export const Route = createFileRoute('/_authenticated')({
     const { accessToken, user, setUser, reset } = auth
     if (!accessToken) {
       throw redirect({
-        to: '/sign-in-2',
+        to: '/sign-in',
         search: { redirect: location.href },
       })
     }
@@ -27,7 +27,7 @@ export const Route = createFileRoute('/_authenticated')({
         if (status === 401 || status === 403) {
           reset()
           throw redirect({
-            to: '/sign-in-2',
+            to: '/sign-in',
             search: { redirect: location.href },
           })
         }
@@ -36,7 +36,7 @@ export const Route = createFileRoute('/_authenticated')({
     }
     try {
       await context.queryClient.prefetchQuery({
-        queryKey: ['bootstrap'],
+        queryKey: ['bootstrap', context.queryClient],
         queryFn: () => fetchBootstrapAndHydrate(context.queryClient),
       })
     } catch {

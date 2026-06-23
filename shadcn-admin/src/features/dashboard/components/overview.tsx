@@ -1,22 +1,32 @@
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
-
-const fallback = [
-  { name: 'Jan', total: 1200 },
-  { name: 'Feb', total: 2100 },
-  { name: 'Mar', total: 1800 },
-  { name: 'Apr', total: 2400 },
-  { name: 'May', total: 2200 },
-  { name: 'Jun', total: 2600 },
-]
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 type OverviewProps = {
-  /** When set (e.g. from `/api/bootstrap` `monthlyMetrics`), shows revenue by month label. */
   chartData?: { name: string; total: number }[]
+  bookingsData?: { name: string; total: number }[]
 }
 
-export function Overview({ chartData }: OverviewProps) {
-  const data =
-    chartData && chartData.length > 0 ? chartData : fallback
+function formatRwf(value: number) {
+  return `${value.toLocaleString()} Rwf`
+}
+
+export function Overview({ chartData, bookingsData }: OverviewProps) {
+  const hasRevenue = chartData && chartData.length > 0
+  const hasBookings = bookingsData && bookingsData.length > 0
+
+  if (!hasRevenue && !hasBookings) {
+    return (
+      <div className='text-muted-foreground flex h-[350px] flex-col items-center justify-center rounded-lg border border-dashed text-center text-sm'>
+        <p>No revenue or booking history in the database yet.</p>
+        <p className='mt-1 text-xs'>
+          Charts populate automatically when you record bookings or payments.
+        </p>
+      </div>
+    )
+  }
+
+  const data = hasRevenue ? chartData : bookingsData
+  const dataKey = hasRevenue ? 'total' : 'total'
+  const barLabel = hasRevenue ? 'Revenue' : 'Bookings'
 
   return (
     <ResponsiveContainer width='100%' height={350}>
@@ -35,11 +45,23 @@ export function Overview({ chartData }: OverviewProps) {
           tickLine={false}
           axisLine={false}
           tickFormatter={(value) =>
-            typeof value === 'number' ? `${value.toLocaleString()} Rwf` : String(value)
+            hasRevenue
+              ? typeof value === 'number'
+                ? formatRwf(value)
+                : String(value)
+              : String(value)
           }
         />
+        <Tooltip
+          formatter={(value) => {
+            const n = typeof value === 'number' ? value : Number(value ?? 0)
+            return hasRevenue ? formatRwf(n) : `${n} bookings`
+          }}
+          labelFormatter={(label) => String(label)}
+        />
         <Bar
-          dataKey='total'
+          dataKey={dataKey}
+          name={barLabel}
           fill='currentColor'
           radius={[4, 4, 0, 0]}
           className='fill-primary'

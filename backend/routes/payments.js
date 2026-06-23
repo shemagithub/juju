@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { simpleGet, simpleList } from '../lib/helpers.js'
+import { queueStatusNotification, readCurrentStatus } from '../lib/statusNotify.js'
 
 function mapPayment(r) {
   return {
@@ -54,7 +55,9 @@ export function registerPaymentRoutes(app, pool) {
         fields.push('amount_rwf = ?')
         vals.push(b.amountRwf)
       }
+      let previousStatus = null
       if (b.status !== undefined) {
+        previousStatus = await readCurrentStatus(pool, 'payments', id)
         fields.push('status = ?')
         vals.push(b.status)
       }
@@ -69,6 +72,9 @@ export function registerPaymentRoutes(app, pool) {
       if (!fields.length) return res.status(400).json({ error: 'No fields' })
       vals.push(id)
       await pool.query(`UPDATE payments SET ${fields.join(', ')} WHERE id = ?`, vals)
+      if (b.status !== undefined) {
+        queueStatusNotification(pool, 'payment', id, previousStatus, b.status)
+      }
       await simpleGet(pool, res, 'SELECT * FROM payments WHERE id = ?', id, mapPayment)
     } catch (e) {
       next(e)

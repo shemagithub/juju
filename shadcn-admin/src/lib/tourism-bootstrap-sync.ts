@@ -5,6 +5,7 @@ import {
 } from '@/features/users/data/adapters'
 import { type User } from '@/features/users/data/schema'
 import { api } from '@/lib/api'
+import { applyAdminSiteMeta } from '@/lib/apply-site-meta'
 
 /** Payload from `GET /api/bootstrap` (Juliet tourism backend). */
 export type BootstrapPayload = {
@@ -13,11 +14,13 @@ export type BootstrapPayload = {
   destinations: unknown[]
   packages: unknown[]
   bookings: unknown[]
+  tourBookingRequests?: unknown[]
   carRentalRequests?: unknown[]
   carRentalVehicles?: unknown[]
   payments: unknown[]
   messages: unknown[]
   reviews: unknown[]
+  dashboardSummary?: DashboardSummary
   blogCategories: unknown[]
   posts: unknown[]
   gallery: unknown[]
@@ -28,6 +31,36 @@ export type BootstrapPayload = {
   roleDefinitions: unknown[]
   settings: Record<string, unknown>
   adminSettings?: Record<string, unknown>
+}
+
+export type DashboardSummary = {
+  revenueRwf: number
+  paymentsRevenue: number
+  bookingsRevenue: number
+  bookingsTotal: number
+  paymentsTotal: number
+  bookingsByStatus: Record<string, number>
+  messagesTotal: number
+  unreadMessages: number
+  reviewsTotal: number
+  pendingReviews: number
+  approvedReviews: number
+  carRentalTotal: number
+  pendingCarRentals: number
+  unreadCarRentals: number
+  tourRequestsTotal: number
+  pendingTourRequests: number
+  unreadTourRequests: number
+  destinationsTotal: number
+  packagesTotal: number
+  fleetTotal: number
+  activeFleet: number
+  blogPostsTotal: number
+  publishedPosts: number
+  galleryTotal: number
+  heroSlidesTotal: number
+  pricingPlansTotal: number
+  customersTotal: number
 }
 
 /** Mirrors TanStack keys used in `@/features/tourism/hooks/use-tourism-queries` and related hooks. */
@@ -46,6 +79,7 @@ export function hydrateTourismCaches(qc: QueryClient, data: BootstrapPayload) {
   qc.setQueryData(['activity-logs'], data.activityLogs)
   qc.setQueryData(['role-definitions'], data.roleDefinitions)
   qc.setQueryData(['site-settings'], data.settings)
+  applyAdminSiteMeta(data.settings ?? {})
 
   if (data.adminSettings !== undefined) {
     qc.setQueryData(['admin-settings'], data.adminSettings)
@@ -53,6 +87,25 @@ export function hydrateTourismCaches(qc: QueryClient, data: BootstrapPayload) {
 
   const rawUsers = (data.tourismUsers ?? []) as ApiTourismUser[]
   qc.setQueryData<User[]>(['users'], rawUsers.map(apiUserToUser))
+
+  if (data.tourBookingRequests !== undefined) {
+    qc.setQueryData(['tour-booking-requests', {}], data.tourBookingRequests)
+    try {
+      const reqs = data.tourBookingRequests as { status?: string; read?: boolean }[]
+      const byStatus: Record<string, number> = {}
+      for (const r of reqs) {
+        const s = String(r?.status ?? 'unknown')
+        byStatus[s] = (byStatus[s] ?? 0) + 1
+      }
+      qc.setQueryData(['tour-booking-requests-summary'], {
+        total: reqs.length,
+        unread: reqs.filter((r) => r && !r.read).length,
+        byStatus,
+      })
+    } catch {
+      /* ignore */
+    }
+  }
 
   if (data.carRentalRequests !== undefined) {
     qc.setQueryData(['car-rental-requests', {}], data.carRentalRequests)

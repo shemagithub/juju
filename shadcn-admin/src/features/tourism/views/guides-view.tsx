@@ -14,16 +14,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
+import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
 import {
   Table,
   TableBody,
@@ -157,7 +152,7 @@ export function TourismGuidesPage({
             Each guide is tied to a user account. Active booking counts update from assignments.
           </CardDescription>
         </CardHeader>
-        <CardContent className='overflow-x-auto'>
+        <CardContent className='min-w-0'>
           {isPending ? (
             <p className='text-muted-foreground text-sm'>Loading…</p>
           ) : (
@@ -186,6 +181,7 @@ export function TourismGuidesPage({
                     <TableCell>{g.activeBookingIds?.length ?? 0}</TableCell>
                     <TableCell className='text-right'>
                       <ResourceRowActions
+                        itemLabel={userLabel(g.userId)}
                         onView={() => setViewG(g)}
                         onEdit={() => openEdit(g)}
                         onDelete={() => setDeleteG(g)}
@@ -199,90 +195,86 @@ export function TourismGuidesPage({
         </CardContent>
       </Card>
 
-      <Dialog open={!!viewG} onOpenChange={(o) => !o && setViewG(null)}>
-        <DialogContent className='sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>Guide</DialogTitle>
-            <DialogDescription className='font-mono text-xs'>{viewG?.id}</DialogDescription>
-          </DialogHeader>
-          {viewG ? (
-            <div className='space-y-3 text-sm'>
-              <p>
-                <span className='text-muted-foreground'>User:</span> {userLabel(viewG.userId)}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Languages:</span>{' '}
-                {(viewG.languages ?? []).join(', ') || '—'}
-              </p>
-              <div className='rounded-md border p-3'>
-                <p className='text-muted-foreground text-xs'>Bio</p>
-                <p className='mt-1 whitespace-pre-wrap'>{viewG.bio || '—'}</p>
-              </div>
-              <p>
-                <span className='text-muted-foreground'>Availability:</span> {viewG.availability}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Active bookings:</span>{' '}
-                {viewG.activeBookingIds?.length ?? 0}
-              </p>
-              <p className='text-muted-foreground text-xs'>
-                Updated {new Date(viewG.updatedAt).toLocaleString()}
-              </p>
+      <ResourceViewDialog
+        open={!!viewG}
+        onOpenChange={(o) => !o && setViewG(null)}
+        title='Guide'
+        description={viewG ? userLabel(viewG.userId) : undefined}
+        onEdit={viewG ? () => openEdit(viewG) : undefined}
+      >
+        {viewG ? (
+          <div className='space-y-3 text-sm'>
+            <p>
+              <span className='text-muted-foreground'>Languages:</span>{' '}
+              {(viewG.languages ?? []).join(', ') || '—'}
+            </p>
+            <div className='rounded-md border p-3'>
+              <p className='text-muted-foreground text-xs'>Bio</p>
+              <p className='mt-1 whitespace-pre-wrap'>{viewG.bio || '—'}</p>
             </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+            <p>
+              <span className='text-muted-foreground'>Availability:</span> {viewG.availability}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Active bookings:</span>{' '}
+              {viewG.activeBookingIds?.length ?? 0}
+            </p>
+            <p className='text-muted-foreground text-xs'>
+              Updated {new Date(viewG.updatedAt).toLocaleString()}
+            </p>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
 
-      <Dialog open={!!editG} onOpenChange={(o) => !o && setEditG(null)}>
-        <DialogContent className='sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>Edit guide</DialogTitle>
-          </DialogHeader>
-          {editG ? (
-            <form onSubmit={saveEdit} className='space-y-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='guser'>User ID</Label>
-                <Input
-                  id='guser'
-                  value={editG.userId}
-                  onChange={(e) => setEditG({ ...editG, userId: e.target.value })}
-                  className='font-mono text-xs'
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='glang'>Languages (comma-separated)</Label>
-                <Input
-                  id='glang'
-                  value={langStr}
-                  onChange={(e) => setLangStr(e.target.value)}
-                  placeholder='English, French, Kinyarwanda'
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='gbio'>Bio</Label>
-                <Textarea
-                  id='gbio'
-                  value={editG.bio}
-                  onChange={(e) => setEditG({ ...editG, bio: e.target.value })}
-                  rows={4}
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='gavail'>Availability</Label>
-                <Input
-                  id='gavail'
-                  value={editG.availability}
-                  onChange={(e) => setEditG({ ...editG, availability: e.target.value })}
-                  placeholder='available, busy, offline…'
-                />
-              </div>
-              <Button type='submit' disabled={editSaving}>
-                {editSaving ? 'Saving…' : 'Save'}
-              </Button>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ResourceEditDialog
+        open={!!editG}
+        onOpenChange={(o) => !o && setEditG(null)}
+        title='Edit guide'
+        itemName={editG ? userLabel(editG.userId) : undefined}
+        onSubmit={saveEdit}
+        saving={editSaving}
+      >
+        {editG ? (
+          <>
+            <div className='space-y-2'>
+              <Label htmlFor='guser'>User ID</Label>
+              <Input
+                id='guser'
+                value={editG.userId}
+                onChange={(e) => setEditG({ ...editG, userId: e.target.value })}
+                className='font-mono text-xs'
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='glang'>Languages (comma-separated)</Label>
+              <Input
+                id='glang'
+                value={langStr}
+                onChange={(e) => setLangStr(e.target.value)}
+                placeholder='English, French, Kinyarwanda'
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='gbio'>Bio</Label>
+              <Textarea
+                id='gbio'
+                value={editG.bio}
+                onChange={(e) => setEditG({ ...editG, bio: e.target.value })}
+                rows={4}
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='gavail'>Availability</Label>
+              <Input
+                id='gavail'
+                value={editG.availability}
+                onChange={(e) => setEditG({ ...editG, availability: e.target.value })}
+                placeholder='available, busy, offline…'
+              />
+            </div>
+          </>
+        ) : null}
+      </ResourceEditDialog>
 
       <ConfirmDialog
         open={!!deleteG}

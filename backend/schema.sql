@@ -131,10 +131,48 @@ CREATE TABLE IF NOT EXISTS car_rental_vehicles (
   UNIQUE KEY uk_car_rental_vehicles_slug (slug)
 );
 
+CREATE TABLE IF NOT EXISTS car_rental_vehicle_categories (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(128) NOT NULL,
+  slug VARCHAR(64) NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  active_flag TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_car_rental_vehicle_cat_slug (slug)
+);
+
+CREATE TABLE IF NOT EXISTS pricing_section (
+  singleton TINYINT(1) NOT NULL PRIMARY KEY DEFAULT 1,
+  eyebrow VARCHAR(64) NOT NULL DEFAULT 'Packages',
+  title VARCHAR(255) NOT NULL DEFAULT 'Prices For Rwanda Adventures',
+  background_url VARCHAR(2048) NOT NULL DEFAULT '',
+  currency VARCHAR(16) NOT NULL DEFAULT '$',
+  price_unit VARCHAR(64) NOT NULL DEFAULT '/person',
+  cta_label VARCHAR(64) NOT NULL DEFAULT 'Book Now',
+  cta_link VARCHAR(512) NOT NULL DEFAULT '/book',
+  CONSTRAINT chk_pricing_singleton CHECK (singleton = 1)
+);
+
+CREATE TABLE IF NOT EXISTS pricing_plans (
+  id VARCHAR(36) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  price_usd DECIMAL(12, 2) NOT NULL DEFAULT 0,
+  features_json JSON NOT NULL,
+  popular_flag TINYINT(1) NOT NULL DEFAULT 0,
+  active_flag TINYINT(1) NOT NULL DEFAULT 1,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS reviews (
   id VARCHAR(36) PRIMARY KEY,
   user_id VARCHAR(36) NOT NULL,
   package_id VARCHAR(36) NOT NULL,
+  author_name VARCHAR(255) NOT NULL DEFAULT '',
+  author_country VARCHAR(128) NOT NULL DEFAULT '',
+  photo_url VARCHAR(2048) NOT NULL DEFAULT '',
   rating INT NOT NULL,
   comment TEXT NOT NULL,
   status VARCHAR(32) NOT NULL DEFAULT 'pending',

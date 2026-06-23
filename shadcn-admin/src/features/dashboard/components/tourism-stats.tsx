@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Card,
@@ -11,6 +12,29 @@ function formatRwf(n: number) {
   return new Intl.NumberFormat(undefined, {
     maximumFractionDigits: 0,
   }).format(n)
+}
+
+type StatCardProps = {
+  title: string
+  value: string
+  hint: string
+  to: string
+}
+
+function StatCard({ title, value, hint, to }: StatCardProps) {
+  return (
+    <Link to={to} className='block'>
+      <Card className='hover:bg-muted/40 h-full transition-colors'>
+        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+          <CardTitle className='text-sm font-medium'>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className='text-2xl font-bold'>{value}</div>
+          <p className='text-muted-foreground text-xs'>{hint}</p>
+        </CardContent>
+      </Card>
+    </Link>
+  )
 }
 
 export function TourismStats() {
@@ -37,20 +61,22 @@ export function TourismStats() {
   if (isError || !data) {
     return (
       <div className='text-muted-foreground rounded-lg border border-dashed p-4 text-sm'>
-        Could not load live stats. Is the API running at{' '}
-        <code className='text-foreground'>/api</code> (see{' '}
-        <code className='text-foreground'>VITE_API_URL</code>)?
+        Could not load live stats. Start the API on port 4000 and refresh.
       </div>
     )
   }
 
-  const revenue = data.monthlyMetrics.reduce((s, m) => s + m.revenueRwf, 0)
-  const users = data.tourismUsers.length
-  const bookings = data.bookings.length
-  const packages = data.packages.length
-  const rentalList = data.carRentalRequests ?? []
-  const rentalLeads = rentalList.length
-  const rentalPending = rentalList.filter(
+  const s = data.dashboardSummary
+  const revenue = s?.revenueRwf ?? data.monthlyMetrics.reduce((sum, m) => sum + m.revenueRwf, 0)
+  const bookings = s?.bookingsTotal ?? data.tourBookingRequests?.length ?? data.bookings.length
+  const tourPending = s?.pendingTourRequests ?? 0
+  const pendingBookings =
+    (s?.bookingsByStatus?.pending ?? 0) || tourPending
+  const unreadMessages = s?.unreadMessages ?? (data.messages ?? []).filter(
+    (m) => typeof m === 'object' && m !== null && 'read' in m && !(m as { read: boolean }).read,
+  ).length
+  const destinations = s?.destinationsTotal ?? data.destinations.length
+  const pendingReviews = s?.pendingReviews ?? (data.reviews ?? []).filter(
     (r) =>
       typeof r === 'object' &&
       r !== null &&
@@ -60,55 +86,42 @@ export function TourismStats() {
 
   return (
     <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6'>
-      <Card>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Revenue (Rwf)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='text-2xl font-bold'>{formatRwf(revenue)}</div>
-          <p className='text-muted-foreground text-xs'>
-            Sum of monthly metrics in the database
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Users</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='text-2xl font-bold'>{users}</div>
-          <p className='text-muted-foreground text-xs'>Registered tourism users</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Bookings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='text-2xl font-bold'>{bookings}</div>
-          <p className='text-muted-foreground text-xs'>All booking records</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Tour packages</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='text-2xl font-bold'>{packages}</div>
-          <p className='text-muted-foreground text-xs'>Packages in catalog</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>Car rental</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='text-2xl font-bold'>{rentalPending}</div>
-          <p className='text-muted-foreground text-xs'>
-            Pending of {rentalLeads} lead{rentalLeads === 1 ? '' : 's'}
-          </p>
-        </CardContent>
-      </Card>
+      <StatCard
+        title='Revenue (Rwf)'
+        value={formatRwf(revenue)}
+        hint={
+          s?.paymentsRevenue
+            ? 'From completed payments'
+            : s?.bookingsRevenue
+              ? 'From booking totals'
+              : 'Tap for revenue reports'
+        }
+        to='/reports/revenue'
+      />
+      <StatCard
+        title='Bookings'
+        value={String(bookings)}
+        hint={`${pendingBookings} pending · ${s?.unreadTourRequests ?? 0} unread`}
+        to='/bookings'
+      />
+      <StatCard
+        title='Messages'
+        value={String(unreadMessages)}
+        hint={`${s?.messagesTotal ?? data.messages.length} total inquiries`}
+        to='/messages/contact'
+      />
+      <StatCard
+        title='Destinations'
+        value={String(destinations)}
+        hint={`${s?.packagesTotal ?? data.packages.length} packages linked`}
+        to='/destinations'
+      />
+      <StatCard
+        title='Reviews'
+        value={String(pendingReviews)}
+        hint={`${s?.approvedReviews ?? 0} approved on site`}
+        to='/reviews/pending'
+      />
     </div>
   )
 }

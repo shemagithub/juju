@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Copy, ImageIcon, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { Copy, ImageIcon, Plus, RefreshCw } from 'lucide-react'
 import { api } from '@/lib/api'
 import { resolveAssetUrl } from '@/lib/asset-url'
 import { handleServerError } from '@/lib/handle-server-error'
@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { ResourceRowActions } from '@/components/shared/resource-row-actions'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
 import {
   type CarRentalVehicleListParams,
@@ -36,11 +37,20 @@ type Vehicle = {
   id: string
   slug: string
   title: string
+  vehicleName: string
+  brand: string
+  model: string
+  category: string
   badge: string
   blurb: string
+  dailyRate: number
   dailyPriceUsd: number
+  status: string
   specs: { icon?: string; text?: string }[]
   imageUrl: string
+  galleryUrls: string[]
+  featured: boolean
+  popularBadge: boolean
   active: boolean
   sortOrder: number
 }
@@ -70,7 +80,7 @@ export function TourismCarRentalVehiclesPage() {
   const { data = [], isPending, refetch, isFetching } = useCarRentalVehiclesQuery(listParams)
   const [deleteV, setDeleteV] = useState<Vehicle | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [preview, setPreview] = useState<Vehicle | null>(null)
+  const [viewV, setViewV] = useState<Vehicle | null>(null)
 
   const rows = useMemo(() => [...(data as Vehicle[])], [data])
 
@@ -129,6 +139,9 @@ export function TourismCarRentalVehiclesPage() {
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
             <RefreshCw className={`me-1 size-4${isFetching ? ' animate-spin' : ''}`} />
             Refresh
+          </Button>
+          <Button variant='outline' size='sm' asChild>
+            <Link to='/car-rental/vehicles/categories'>Categories</Link>
           </Button>
           <Button variant='outline' size='sm' asChild>
             <Link to='/car-rental'>Quote requests</Link>
@@ -195,7 +208,7 @@ export function TourismCarRentalVehiclesPage() {
             <Label htmlFor='fleet-q'>Search</Label>
             <Input
               id='fleet-q'
-              placeholder='Title, slug, badge, blurb…'
+              placeholder='Name, brand, model, plate, slug…'
               value={qInput}
               onChange={(e) => setQInput(e.target.value)}
             />
@@ -223,8 +236,8 @@ export function TourismCarRentalVehiclesPage() {
                     <button
                       type='button'
                       className='bg-muted relative h-20 w-full shrink-0 overflow-hidden rounded-md sm:h-16 sm:w-24'
-                      onClick={() => (src ? setPreview(v) : undefined)}
-                      title={src ? 'View image' : undefined}
+                      onClick={() => setViewV(v)}
+                      title='View details'
                     >
                       {src ? (
                         <img alt='' className='h-full w-full object-cover' src={src} />
@@ -237,20 +250,25 @@ export function TourismCarRentalVehiclesPage() {
                     </button>
                     <div className='min-w-0 flex-1'>
                       <div className='flex flex-wrap items-center gap-2'>
-                        <span className='font-semibold'>{v.title}</span>
+                        <span className='font-semibold'>{v.vehicleName || v.title}</span>
                         <Badge variant='outline' className='font-mono text-xs'>
                           {v.slug}
                         </Badge>
                         <Badge variant={v.active ? 'default' : 'secondary'}>
-                          {v.active ? 'Active' : 'Hidden'}
+                          {v.active ? 'Live' : 'Hidden'}
                         </Badge>
+                        {v.featured ? <Badge variant='secondary'>Featured</Badge> : null}
+                        {v.popularBadge ? <Badge variant='secondary'>Popular</Badge> : null}
                       </div>
-                      <p className='text-muted-foreground truncate text-xs'>{v.badge}</p>
+                      <p className='text-muted-foreground truncate text-xs'>
+                        {[v.brand, v.model, v.category].filter(Boolean).join(' · ') || v.badge}
+                      </p>
                       <p className='mt-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400'>
-                        from ${v.dailyPriceUsd}/day · sort {v.sortOrder}
+                        from ${v.dailyRate ?? v.dailyPriceUsd}/day · {v.status || 'available'} ·{' '}
+                        {(v.galleryUrls?.length ?? (v.imageUrl ? 1 : 0))} img · sort {v.sortOrder}
                       </p>
                     </div>
-                    <div className='flex flex-wrap gap-2 sm:justify-end'>
+                    <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
                       <Button
                         variant='outline'
                         size='sm'
@@ -267,19 +285,12 @@ export function TourismCarRentalVehiclesPage() {
                         <Copy className='me-1 size-4' />
                         Duplicate
                       </Button>
-                      <Button variant='outline' size='sm' asChild>
-                        <Link
-                          to='/car-rental/vehicles/$vehicleId'
-                          params={{ vehicleId: v.id }}
-                        >
-                          <Pencil className='me-1 size-4' />
-                          Edit
-                        </Link>
-                      </Button>
-                      <Button variant='destructive' size='sm' onClick={() => setDeleteV(v)}>
-                        <Trash2 className='me-1 size-4' />
-                        Delete
-                      </Button>
+                      <ResourceRowActions
+                        onView={() => setViewV(v)}
+                        editTo='/car-rental/vehicles/$vehicleId'
+                        editParams={{ vehicleId: v.id }}
+                        onDelete={() => setDeleteV(v)}
+                      />
                     </div>
                   </div>
                 )
@@ -289,17 +300,70 @@ export function TourismCarRentalVehiclesPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!preview} onOpenChange={(open) => !open && setPreview(null)}>
-        <DialogContent className='max-w-2xl'>
+      <Dialog open={!!viewV} onOpenChange={(open) => !open && setViewV(null)}>
+        <DialogContent className='max-h-[90vh] max-w-2xl overflow-y-auto'>
           <DialogHeader>
-            <DialogTitle>{preview?.title}</DialogTitle>
+            <DialogTitle>{viewV?.vehicleName || viewV?.title}</DialogTitle>
           </DialogHeader>
-          {preview && resolveAssetUrl(preview.imageUrl) ? (
-            <img
-              alt=''
-              className='max-h-[70vh] w-full rounded-md object-contain'
-              src={resolveAssetUrl(preview.imageUrl)}
-            />
+          {viewV ? (
+            <div className='space-y-4 text-sm'>
+              <div className='grid gap-3 sm:grid-cols-2'>
+                {(viewV.galleryUrls?.length
+                  ? viewV.galleryUrls
+                  : viewV.imageUrl
+                    ? [viewV.imageUrl]
+                    : []
+                ).map((url, idx) => {
+                  const imgSrc = resolveAssetUrl(url)
+                  if (!imgSrc) return null
+                  return (
+                    <img
+                      key={`${url}-${idx}`}
+                      alt=''
+                      className='max-h-[40vh] w-full rounded-md object-cover'
+                      src={imgSrc}
+                    />
+                  )
+                })}
+              </div>
+              <div className='flex flex-wrap gap-2'>
+                <Badge variant='outline' className='font-mono text-xs'>
+                  {viewV.slug}
+                </Badge>
+                <Badge variant={viewV.active ? 'default' : 'secondary'}>
+                  {viewV.active ? 'Live' : 'Hidden'}
+                </Badge>
+                {viewV.featured ? <Badge variant='secondary'>Featured</Badge> : null}
+                {viewV.popularBadge ? <Badge variant='secondary'>Popular</Badge> : null}
+              </div>
+              <p>
+                <span className='text-muted-foreground'>Brand / model:</span>{' '}
+                {[viewV.brand, viewV.model].filter(Boolean).join(' ') || '—'}
+              </p>
+              <p>
+                <span className='text-muted-foreground'>Category:</span> {viewV.category || '—'}
+              </p>
+              <p>
+                <span className='text-muted-foreground'>Daily rate:</span> $
+                {viewV.dailyRate ?? viewV.dailyPriceUsd}/day
+              </p>
+              <p>
+                <span className='text-muted-foreground'>Status:</span> {viewV.status || 'available'}
+              </p>
+              {viewV.blurb ? (
+                <div className='rounded-md border p-3'>
+                  <p className='text-muted-foreground text-xs'>Description</p>
+                  <p className='mt-1'>{viewV.blurb}</p>
+                </div>
+              ) : null}
+              {(viewV.specs?.length ?? 0) > 0 ? (
+                <ul className='text-muted-foreground list-inside list-disc space-y-1'>
+                  {viewV.specs.map((s, i) => (
+                    <li key={i}>{s.text || s.icon}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           ) : null}
         </DialogContent>
       </Dialog>

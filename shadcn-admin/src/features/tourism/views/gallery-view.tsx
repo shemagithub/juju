@@ -15,6 +15,10 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ConfirmDialog } from '@/components/confirm-dialog'
+import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
+import { ResourceRowActions } from '@/components/shared/resource-row-actions'
+import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
 import { useGalleryQuery } from '../hooks/use-tourism-queries'
 import { ImageUploader } from '@/components/shared/image-uploader'
@@ -35,7 +39,52 @@ export function TourismGalleryPage({ variant }: { variant: 'list' | 'upload' }) 
 }
 
 function GalleryListPage() {
+  const qc = useQueryClient()
   const { data = [], isPending, refetch } = useGalleryQuery()
+  const [viewItem, setViewItem] = useState<Item | null>(null)
+  const [editItem, setEditItem] = useState<Item | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
+  const [deleteItem, setDeleteItem] = useState<Item | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editItem) return
+    if (!editItem.url.trim()) return toast.error('Image URL is required')
+    setEditSaving(true)
+    try {
+      await api.patch(`/api/gallery/${editItem.id}`, {
+        url: editItem.url.trim(),
+        type: editItem.type,
+        category: editItem.category,
+        caption: editItem.caption,
+      })
+      toast.success('Media updated')
+      setEditItem(null)
+      await qc.invalidateQueries({ queryKey: ['gallery'] })
+      await qc.invalidateQueries({ queryKey: ['bootstrap'] })
+    } catch (err) {
+      handleServerError(err)
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
+  const doDelete = async () => {
+    if (!deleteItem) return
+    setDeleting(true)
+    try {
+      await api.delete(`/api/gallery/${deleteItem.id}`)
+      toast.success('Media deleted')
+      setDeleteItem(null)
+      await qc.invalidateQueries({ queryKey: ['gallery'] })
+      await qc.invalidateQueries({ queryKey: ['bootstrap'] })
+    } catch (err) {
+      handleServerError(err)
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   return (
     <TourismAdminShell
@@ -76,13 +125,103 @@ function GalleryListPage() {
                     </div>
                   )}
                 </div>
-                <p className='mt-2 text-sm font-medium'>{g.caption || '—'}</p>
-                <p className='text-muted-foreground text-xs'>{g.category}</p>
+                <div className='mt-2 flex items-start justify-between gap-2'>
+                  <div className='min-w-0'>
+                    <p className='truncate text-sm font-medium'>{g.caption || '—'}</p>
+                    <p className='text-muted-foreground text-xs'>{g.category}</p>
+                  </div>
+                  <ResourceRowActions
+                    itemLabel={g.caption || g.category || 'media'}
+                    onView={() => setViewItem(g)}
+                    onEdit={() => setEditItem({ ...g })}
+                    onDelete={() => setDeleteItem(g)}
+                  />
+                </div>
               </CardContent>
             </Card>
           ))
         )}
       </div>
+
+      <ResourceViewDialog
+        open={!!viewItem}
+        onOpenChange={(o) => !o && setViewItem(null)}
+        title={viewItem?.caption || 'Gallery item'}
+        description={viewItem?.id}
+        onEdit={viewItem ? () => setEditItem({ ...viewItem }) : undefined}
+      >
+        {viewItem ? (
+          <div className='space-y-3 text-sm'>
+            {viewItem.type === 'image' ? (
+              <img
+                src={resolveAssetUrl(viewItem.url)}
+                alt={viewItem.caption}
+                className='max-h-[50vh] w-full rounded-md object-contain'
+              />
+            ) : null}
+            <p>
+              <span className='text-muted-foreground'>Category:</span> {viewItem.category}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Type:</span> {viewItem.type}
+            </p>
+            <p className='break-all'>
+              <span className='text-muted-foreground'>URL:</span> {viewItem.url}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Updated:</span>{' '}
+              {new Date(viewItem.updatedAt).toLocaleString()}
+            </p>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
+
+      <ResourceEditDialog
+        open={!!editItem}
+        onOpenChange={(o) => !o && setEditItem(null)}
+        title='Edit media'
+        itemName={editItem?.caption || editItem?.category}
+        onSubmit={saveEdit}
+        saving={editSaving}
+      >
+        {editItem ? (
+          <>
+            <ImageUploader
+              label='Image'
+              value={editItem.url}
+              onChange={(url) => setEditItem({ ...editItem, url })}
+              required
+            />
+            <div className='space-y-2'>
+              <Label htmlFor='gcat'>Category</Label>
+              <Input
+                id='gcat'
+                value={editItem.category}
+                onChange={(e) => setEditItem({ ...editItem, category: e.target.value })}
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='gcap'>Caption</Label>
+              <Input
+                id='gcap'
+                value={editItem.caption}
+                onChange={(e) => setEditItem({ ...editItem, caption: e.target.value })}
+              />
+            </div>
+          </>
+        ) : null}
+      </ResourceEditDialog>
+
+      <ConfirmDialog
+        open={!!deleteItem}
+        onOpenChange={(o) => !o && setDeleteItem(null)}
+        title='Delete media?'
+        desc={deleteItem ? <>Remove “{deleteItem.caption || deleteItem.id}” from the gallery.</> : ''}
+        destructive
+        isLoading={deleting}
+        confirmText={deleting ? 'Deleting…' : 'Delete'}
+        handleConfirm={() => void doDelete()}
+      />
     </TourismAdminShell>
   )
 }

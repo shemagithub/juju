@@ -1,0 +1,109 @@
+/* Shared inner-page hero styling */
+.packages-hero,
+.contact-hero,
+.blog-hero,
+.destinations-hero,
+.gallery-hero,
+.about-hero,
+.service-hero,
+.legal-page .page-hero {
+  margin-top: 0 !important;
+  padding: 160px 0 80px !important;
+}
+
+.packages-hero .hero-overlay,
+.contact-hero .hero-overlay,
+.blog-hero .hero-overlay,
+.destinations-hero .hero-overlay,
+.gallery-hero .hero-overlay,
+.about-hero .hero-overlay,
+.service-hero .hero-overlay,
+.legal-page .page-hero-overlay {
+  background: linear-gradient(135deg, rgba(15, 79, 79, 0.9), rgba(26, 107, 107, 0.85)) !important;
+}
+
+.packages-hero .hero-title,
+.contact-hero .hero-title,
+.blog-hero .hero-title,
+.destinations-hero .hero-title,
+.gallery-hero .hero-title,
+.about-hero .hero-title,
+.service-hero .hero-title,
+.legal-page .page-hero h1 {
+  font-family: var(--fontFamily1) !important;
+  font-size: clamp(32px, 5vw, 52px) !important;
+}
+
+/* Teal accent overrides for inner pages */
+.category-tabs .nav-link.active,
+.filter-btn.active,
+.blog-category-btn.active {
+  color: var(--teal) !important;
+  border-color: var(--teal) !important;
+}
+
+.category-tabs .nav-link:hover,
+.filter-btn:hover {
+  color: var(--teal) !important;
+}
+
+.package-card .badge,
+.blog-card .category-badge {
+  background: var(--primaryClr) !important;
+  color: var(--black) !important;
+}
+
+.inquiry-card:hover {
+  border-color: var(--teal) !important;
+}
+
+.inquiry-card .inquiry-icon {
+  background: rgba(26, 107, 107, 0.1) !important;
+  color: var(--teal) !important;
+}
+
+/* Card styling refresh */
+.package-card,
+.blog-post-card,
+.destination-card,
+.service-card {
+  border-radius: var(--radius) !important;
+  border: none !important;
+  box-shadow: var(--shadow) !important;
+  transition: all 0.3s ease !important;
+  overflow: hidden;
+}
+
+.package-card:hover,
+.blog-post-card:hover,
+.destination-card:hover,
+.service-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadowHover) !important;
+}
+
+@media (max-width: 991px) {
+  .packages-hero,
+  .contact-hero,
+  .blog-hero,
+  .destinations-hero,
+  .gallery-hero,
+  .about-hero,
+  .service-hero,
+  .legal-page .page-hero {
+    padding: 130px 0 70px !important;
+  }
+}
+
+@media (max-width: 575px) {
+  .packages-hero,
+  .contact-hero,
+  .blog-hero,
+  .destinations-hero,
+  .gallery-hero,
+  .about-hero,
+  .service-hero,
+  .legal-page .page-hero {
+    padding: 115px 0 55px !important;
+  }
+}

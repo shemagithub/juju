@@ -1,0 +1,498 @@
+.book-page {
+  min-height: 100vh;
+  background: var(--bgClr);
+  padding-top: 80px;
+}
+
+/* 1. Booking Header */
+.book-header {
+  background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);
+  color: var(--white);
+  padding: 60px 0 40px;
+  margin-bottom: 30px;
+}
+
+.book-title {
+  font-size: 42px;
+  font-weight: bold;
+  color: var(--white);
+  margin-bottom: 15px;
+  font-family: var(--fontFamily1);
+}
+
+.book-subtitle {
+  font-size: 20px;
+  color: var(--white);
+  opacity: 0.95;
+  margin-bottom: 20px;
+}
+
+.trust-badges {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.trust-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.trust-badge i {
+  margin-right: 5px;
+}
+
+/* 12. Progress Indicator */
+.progress-section {
+  background: var(--white);
+  border-bottom: 2px solid #e9ecef;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.progress-steps::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #e9ecef;
+  z-index: 0;
+}
+
+.progress-step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e9ecef;
+  color: var(--textclr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active .step-number {
+  background: var(--primaryClr);
+  color: var(--white);
+}
+
+.progress-step.current .step-number {
+  background: #228b22;
+  color: var(--white);
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px rgba(34, 139, 34, 0.2);
+}
+
+.step-title {
+  font-size: 12px;
+  color: var(--textclr);
+  font-weight: 500;
+}
+
+.progress-step.active .step-title,
+.progress-step.current .step-title {
+  color: var(--black);
+  font-weight: bold;
+}
+
+/* Booking Cards */
+.booking-card {
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.booking-card .card-header {
+  background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);
+  color: var(--white);
+  border: none;
+  padding: 20px;
+}
+
+.booking-card .card-header h3 {
+  margin: 0;
+  font-size: 24px;
+  font-family: var(--fontFamily1);
+}
+
+.booking-card .card-body {
+  padding: 30px;
+}
+
+/* Service Selection */
+.service-option {
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--white);
+}
+
+.service-option:hover {
+  border-color: #228b22;
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(34, 139, 34, 0.2);
+}
+
+.service-option.selected {
+  border-color: #228b22;
+  background: #f0fff4;
+}
+
+.service-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.service-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--black);
+  margin-bottom: 5px;
+}
+
+.permit-badge {
+  background: #ffc107;
+  color: var(--black);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+/* Gorilla Permit Section */
+.permit-card {
+  background: #f0fff4;
+  border: 2px solid #228b22;
+  border-radius: 10px;
+}
+
+.permit-card .card-body {
+  padding: 20px;
+}
+
+/* Accommodation Selection */
+.accommodation-option {
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--white);
+}
+
+.accommodation-option:hover {
+  border-color: #228b22;
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(34, 139, 34, 0.2);
+}
+
+.accommodation-option.selected {
+  border-color: #228b22;
+  background: #f0fff4;
+}
+
+.accommodation-option img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.acc-name {
+  padding: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.acc-price {
+  padding: 5px 10px 10px;
+  text-align: center;
+  color: #228b22;
+  font-weight: bold;
+}
+
+/* Add-ons */
+.addons-card {
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+/* Pricing Summary */
+.pricing-summary {
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.price-row.total {
+  border-top: 2px solid #228b22;
+  border-bottom: none;
+  margin-top: 10px;
+  padding-top: 15px;
+  font-size: 18px;
+}
+
+/* Payment Methods */
+.payment-methods .form-check {
+  padding: 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-methods .form-check:hover {
+  border-color: #228b22;
+  background: #f0fff4;
+}
+
+.payment-methods .form-check-input:checked ~ .form-check-label {
+  color: #228b22;
+  font-weight: bold;
+}
+
+.payment-methods .form-check:has(.form-check-input:checked) {
+  border-color: #228b22;
+  background: #f0fff4;
+}
+
+/* Policies */
+.policies-card {
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+/* Summary Sidebar */
+.summary-card {
+  background: var(--white);
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  top: 100px;
+}
+
+.summary-item {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.summary-total {
+  font-size: 20px;
+  color: #228b22;
+}
+
+/* Assistance Card */
+.assistance-card {
+  background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);
+  color: var(--white);
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  top: 450px;
+}
+
+.assistance-card .card-header {
+  background: transparent;
+  border: none;
+  color: var(--white);
+  padding: 20px 20px 10px;
+}
+
+.assistance-card .card-header h5 {
+  color: var(--white);
+  margin: 0;
+}
+
+.assistance-card .card-body {
+  padding: 20px;
+}
+
+.assistance-text {
+  color: var(--white);
+  margin-bottom: 20px;
+}
+
+.assistance-card .primaryBtn {
+  background: var(--white);
+  color: #228b22;
+  border: none;
+}
+
+.assistance-card .primaryBtn:hover {
+  background: #f0fff4;
+  transform: translateY(-2px);
+}
+
+.assistance-card .btn-outline-primary,
+.assistance-card .btn-outline-secondary {
+  border-color: var(--white);
+  color: var(--white);
+}
+
+.assistance-card .btn-outline-primary:hover,
+.assistance-card .btn-outline-secondary:hover {
+  background: var(--white);
+  color: #228b22;
+}
+
+/* Confirmation Success */
+.success-icon,
+.booking-confirm-icon {
+  font-size: 80px;
+  color: var(--teal);
+}
+
+.booking-confirm-card {
+  border: none;
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+}
+
+.success-title {
+  color: var(--black);
+  font-family: var(--fontFamily1);
+  margin-bottom: 20px;
+}
+
+.booking-reference {
+  font-size: 20px;
+  color: var(--textclr);
+  margin-bottom: 20px;
+}
+
+.booking-reference strong {
+  color: #228b22;
+  font-size: 24px;
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+/* Responsive Design */
+@media only screen and (max-width: 991px) {
+  .book-title {
+    font-size: 32px;
+  }
+
+  .progress-steps::before {
+    display: none;
+  }
+
+  .step-title {
+    font-size: 10px;
+  }
+
+  .summary-card,
+  .assistance-card {
+    position: relative !important;
+    top: 0 !important;
+    margin-bottom: 20px;
+  }
+
+  .booking-card .card-body {
+    padding: 20px;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .book-header {
+    padding: 40px 0 30px;
+  }
+
+  .book-title {
+    font-size: 28px;
+  }
+
+  .book-subtitle {
+    font-size: 16px;
+  }
+
+  .progress-steps {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .progress-steps::before {
+    left: 20px;
+    right: auto;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    height: 100%;
+  }
+
+  .progress-step {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+  }
+
+  .step-number {
+    margin: 0 15px 0 0;
+  }
+
+  .step-title {
+    flex: 1;
+  }
+
+  .service-option {
+    padding: 15px;
+  }
+
+  .service-icon {
+    font-size: 36px;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  .book-page {
+    padding-top: 60px;
+  }
+
+  .confirmation-actions {
+    flex-direction: column;
+  }
+
+  .confirmation-actions .btn {
+    width: 100%;
+  }
+}
+

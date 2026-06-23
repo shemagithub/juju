@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { resolveAssetUrl } from '@/lib/asset-url'
 
-const MAX_BYTES = 600 * 1024 * 1024
+const MAX_BYTES = 6 * 1024 * 1024
 
 async function fileToDataUrl(file: File): Promise<string> {
   return await new Promise((resolve, reject) => {
@@ -133,7 +133,7 @@ export function ImageUploader({
             under <code>/uploads/</code>.
           </p>
         )}
-        <p className='text-muted-foreground mt-2 text-xs'>Max file size: 600MB.</p>
+        <p className='text-muted-foreground mt-2 text-xs'>Max file size: 6MB.</p>
       </div>
     </div>
   )
@@ -261,7 +261,7 @@ export function ImagesUploader({
             Drop multiple images, or paste URLs one-by-one.
           </p>
         )}
-        <p className='text-muted-foreground mt-2 text-xs'>Max file size: 600MB.</p>
+        <p className='text-muted-foreground mt-2 text-xs'>Max file size: 6MB.</p>
       </div>
     </div>
   )

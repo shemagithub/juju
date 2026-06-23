@@ -1,18 +1,33 @@
 import { parseJson } from './helpers.js'
 
-export async function destinationsWithLinks(pool) {
-  const [rows] = await pool.query('SELECT * FROM destinations ORDER BY name')
-  const dests = rows.map((r) => ({
+export function mapDestinationRow(r) {
+  return {
     id: r.id,
     name: r.name,
     slug: r.slug,
-    description: r.description,
+    description: r.description ?? '',
     imageUrls: parseJson(r.image_urls, []),
     lat: Number(r.lat),
     lng: Number(r.lng),
+    category: r.category ?? 'parks',
+    location: r.location ?? '',
+    distance: r.distance ?? '',
+    permitRequired: !!r.permit_required,
+    permitPrice: Number(r.permit_price ?? 0),
+    highlights: parseJson(r.highlights_json, []),
+    activities: parseJson(r.activities_json, []),
+    bestTime: r.best_time ?? '',
+    weather: r.weather ?? '',
+    reviews: parseJson(r.reviews_json, []),
+    faqs: parseJson(r.faqs_json, []),
     updatedAt: new Date(r.updated_at).toISOString(),
     linkedPackageIds: [],
-  }))
+  }
+}
+
+export async function destinationsWithLinks(pool) {
+  const [rows] = await pool.query('SELECT * FROM destinations ORDER BY name')
+  const dests = rows.map(mapDestinationRow)
   if (!dests.length) return dests
   const ids = dests.map((d) => d.id)
   const ph = ids.map(() => '?').join(',')

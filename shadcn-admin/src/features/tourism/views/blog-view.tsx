@@ -25,15 +25,10 @@ import {
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { ImageUploader } from '@/components/shared/image-uploader'
+import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
 import { ResourceRowActions } from '@/components/shared/resource-row-actions'
+import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { resolveAssetUrl } from '@/lib/asset-url'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
 import { useBlogCategoriesQuery, useBlogPostsQuery } from '../hooks/use-tourism-queries'
@@ -166,6 +161,7 @@ function BlogListPage() {
                     </TableCell>
                     <TableCell className='text-right'>
                       <ResourceRowActions
+                        itemLabel={p.title}
                         onView={() => setViewPost(p)}
                         onEdit={() => setEditDraft({ ...p })}
                         onDelete={() => setDeletePost(p)}
@@ -179,69 +175,66 @@ function BlogListPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!viewPost} onOpenChange={(o) => (o ? null : setViewPost(null))}>
-        <DialogContent className='sm:max-w-3xl'>
-          <DialogHeader>
-            <DialogTitle>{viewPost?.title ?? 'Post'}</DialogTitle>
-            <DialogDescription>
-              {viewPost ? (
-                <span>
-                  {viewPost.published ? 'Published' : 'Draft'} ·{' '}
-                  {categoryName(viewPost.categoryId)} ·{' '}
-                  {new Date(viewPost.updatedAt).toLocaleString()}
-                </span>
-              ) : null}
-            </DialogDescription>
-          </DialogHeader>
-          {viewPost ? (
-            <div className='space-y-4'>
-              {viewPost.coverImageUrl ? (
-                <div className='overflow-hidden rounded-md border'>
-                  <img
-                    src={resolveAssetUrl(viewPost.coverImageUrl)}
-                    alt={viewPost.title}
-                    className='h-56 w-full object-cover'
-                  />
-                </div>
-              ) : null}
-              {viewPost.excerpt ? (
-                <div className='rounded-md border p-3'>
-                  <p className='text-muted-foreground text-xs'>Excerpt</p>
-                  <p className='mt-1 text-sm'>{viewPost.excerpt}</p>
-                </div>
-              ) : null}
-              <div className='rounded-md border p-3'>
-                <p className='text-muted-foreground text-xs'>Body</p>
-                <pre className='mt-2 max-h-[45vh] whitespace-pre-wrap text-sm leading-relaxed'>
-                  {viewPost.body || '—'}
-                </pre>
-              </div>
-              <div className='text-muted-foreground text-xs'>
-                <p>
-                  <span className='font-medium'>Slug:</span> {viewPost.slug}
-                </p>
-                <p>
-                  <span className='font-medium'>ID:</span> {viewPost.id}
-                </p>
-              </div>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={!!editDraft}
-        onOpenChange={(o) => {
-          if (!o) setEditDraft(null)
-        }}
+      <ResourceViewDialog
+        open={!!viewPost}
+        onOpenChange={(o) => !o && setViewPost(null)}
+        title={viewPost?.title ?? 'Post'}
+        description={
+          viewPost
+            ? `${viewPost.published ? 'Published' : 'Draft'} · ${categoryName(viewPost.categoryId)}`
+            : undefined
+        }
+        size='3xl'
+        onEdit={viewPost ? () => setEditDraft({ ...viewPost }) : undefined}
       >
-        <DialogContent className='sm:max-w-2xl'>
-          <DialogHeader>
-            <DialogTitle>Edit post</DialogTitle>
-            <DialogDescription>Update fields and save. Slug stays as stored unless you change title in API later.</DialogDescription>
-          </DialogHeader>
-          {editDraft ? (
-            <form onSubmit={saveEdit} className='space-y-4'>
+        {viewPost ? (
+          <div className='space-y-4'>
+            {viewPost.coverImageUrl ? (
+              <div className='overflow-hidden rounded-md border'>
+                <img
+                  src={resolveAssetUrl(viewPost.coverImageUrl)}
+                  alt={viewPost.title}
+                  className='h-56 w-full object-cover'
+                />
+              </div>
+            ) : null}
+            {viewPost.excerpt ? (
+              <div className='rounded-md border p-3'>
+                <p className='text-muted-foreground text-xs'>Excerpt</p>
+                <p className='mt-1 text-sm'>{viewPost.excerpt}</p>
+              </div>
+            ) : null}
+            <div className='rounded-md border p-3'>
+              <p className='text-muted-foreground text-xs'>Body</p>
+              <pre className='mt-2 max-h-[45vh] whitespace-pre-wrap text-sm leading-relaxed'>
+                {viewPost.body || '—'}
+              </pre>
+            </div>
+            <div className='text-muted-foreground text-xs'>
+              <p>
+                <span className='font-medium'>Slug:</span> {viewPost.slug}
+              </p>
+              <p>
+                <span className='font-medium'>Updated:</span>{' '}
+                {new Date(viewPost.updatedAt).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
+
+      <ResourceEditDialog
+        open={!!editDraft}
+        onOpenChange={(o) => !o && setEditDraft(null)}
+        title='Edit post'
+        description='Update fields and save. Slug stays as stored unless you change title in API later.'
+        itemName={editDraft?.title}
+        onSubmit={saveEdit}
+        saving={editSaving}
+        size='2xl'
+      >
+        {editDraft ? (
+          <>
               <div className='space-y-2'>
                 <Label htmlFor='et'>Title</Label>
                 <Input
@@ -305,17 +298,13 @@ function BlogListPage() {
                 />
                 Published
               </label>
-              <Button type='submit' disabled={editSaving}>
-                {editSaving ? 'Saving…' : 'Save changes'}
-              </Button>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+          </>
+        ) : null}
+      </ResourceEditDialog>
 
       <ConfirmDialog
         open={!!deletePost}
-        onOpenChange={(o) => (o ? null : setDeletePost(null))}
+        onOpenChange={(o) => !o && setDeletePost(null)}
         title='Delete blog post?'
         desc={
           <div className='space-y-2'>
@@ -553,6 +542,7 @@ function BlogCategoriesPage() {
                   <TableCell className='text-muted-foreground'>{c.slug}</TableCell>
                   <TableCell className='text-right'>
                     <ResourceRowActions
+                      itemLabel={c.name}
                       onView={() => setViewCat(c)}
                       onEdit={() => setEditCat({ ...c })}
                       onDelete={() => setDeleteCat(c)}
@@ -565,50 +555,46 @@ function BlogCategoriesPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!viewCat} onOpenChange={(o) => !o && setViewCat(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{viewCat?.name}</DialogTitle>
-            <DialogDescription>Category details</DialogDescription>
-          </DialogHeader>
-          {viewCat ? (
-            <div className='space-y-2 text-sm'>
-              <p>
-                <span className='text-muted-foreground'>Slug:</span> {viewCat.slug}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>ID:</span>{' '}
-                <span className='font-mono text-xs'>{viewCat.id}</span>
-              </p>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ResourceViewDialog
+        open={!!viewCat}
+        onOpenChange={(o) => !o && setViewCat(null)}
+        title={viewCat?.name ?? 'Category'}
+        description='Category details'
+        onEdit={viewCat ? () => setEditCat({ ...viewCat }) : undefined}
+      >
+        {viewCat ? (
+          <div className='space-y-2 text-sm'>
+            <p>
+              <span className='text-muted-foreground'>Slug:</span> {viewCat.slug}
+            </p>
+            <p className='font-mono text-xs'>{viewCat.id}</p>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
 
-      <Dialog open={!!editCat} onOpenChange={(o) => !o && setEditCat(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit category</DialogTitle>
-          </DialogHeader>
-          {editCat ? (
-            <form onSubmit={saveCategory} className='space-y-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='cn'>Name</Label>
-                <Input
-                  id='cn'
-                  value={editCat.name}
-                  onChange={(e) => setEditCat({ ...editCat, name: e.target.value })}
-                  required
-                />
-              </div>
-              <p className='text-muted-foreground text-xs'>Slug updates if you change name (via API).</p>
-              <Button type='submit' disabled={editCatSaving}>
-                {editCatSaving ? 'Saving…' : 'Save'}
-              </Button>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ResourceEditDialog
+        open={!!editCat}
+        onOpenChange={(o) => !o && setEditCat(null)}
+        title='Edit category'
+        itemName={editCat?.name}
+        onSubmit={saveCategory}
+        saving={editCatSaving}
+      >
+        {editCat ? (
+          <>
+            <div className='space-y-2'>
+              <Label htmlFor='cn'>Name</Label>
+              <Input
+                id='cn'
+                value={editCat.name}
+                onChange={(e) => setEditCat({ ...editCat, name: e.target.value })}
+                required
+              />
+            </div>
+            <p className='text-muted-foreground text-xs'>Slug updates if you change name (via API).</p>
+          </>
+        ) : null}
+      </ResourceEditDialog>
 
       <ConfirmDialog
         open={!!deleteCat}

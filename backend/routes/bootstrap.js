@@ -1,60 +1,75 @@
 import { parseJson } from '../lib/helpers.js'
+import { buildDashboardSummary, resolveMonthlyMetrics } from '../lib/dashboardMetrics.js'
 import { mapCarRentalVehicle } from './carRentalFleet.js'
+import { mapTourBookingRequest } from './bookingRequests.js'
 import { destinationsWithLinks, packagesFull } from '../lib/services.js'
+
+async function safeRows(pool, sql, params = []) {
+  try {
+    const [rows] = await pool.query(sql, params)
+    return rows ?? []
+  } catch {
+    return []
+  }
+}
 
 export function registerBootstrapRoute(app, pool) {
   app.get('/api/bootstrap', async (_req, res, next) => {
     try {
-      const [users] = await pool.query('SELECT * FROM tourism_users ORDER BY created_at DESC')
-      const [packageCategories] = await pool.query(
-        'SELECT * FROM package_categories ORDER BY name',
-      )
-      const destinations = await destinationsWithLinks(pool)
-      const packages = await packagesFull(pool)
-      const [bookings] = await pool.query('SELECT * FROM bookings ORDER BY created_at DESC')
-      const [payments] = await pool.query('SELECT * FROM payments ORDER BY created_at DESC')
-      const [messages] = await pool.query(
-        'SELECT * FROM message_threads ORDER BY created_at DESC',
-      )
-      let carRentalRows = []
-      try {
-        const [crr] = await pool.query(
-          'SELECT * FROM car_rental_requests ORDER BY created_at DESC',
-        )
-        carRentalRows = crr ?? []
-      } catch {
-        carRentalRows = []
-      }
-      let carRentalVehicleRows = []
-      try {
-        const [cv] = await pool.query(
+      const [
+        users,
+        packageCategories,
+        destinations,
+        packages,
+        bookings,
+        payments,
+        messages,
+        carRentalRows,
+        carRentalVehicleRows,
+        reviews,
+        blogCategories,
+        posts,
+        gallery,
+        guides,
+        tourBookingRows,
+        heroSlideRows,
+        pricingPlanRows,
+        monthlyMetricRows,
+        notifications,
+        activityLogs,
+        roleDefinitions,
+        settingsRow,
+        adminSettingsRow,
+        bookRows,
+      ] = await Promise.all([
+        safeRows(pool, 'SELECT * FROM tourism_users ORDER BY created_at DESC'),
+        safeRows(pool, 'SELECT * FROM package_categories ORDER BY name'),
+        destinationsWithLinks(pool),
+        packagesFull(pool),
+        safeRows(pool, 'SELECT * FROM bookings ORDER BY created_at DESC'),
+        safeRows(pool, 'SELECT * FROM payments ORDER BY created_at DESC'),
+        safeRows(pool, 'SELECT * FROM message_threads ORDER BY created_at DESC'),
+        safeRows(pool, 'SELECT * FROM car_rental_requests ORDER BY created_at DESC'),
+        safeRows(
+          pool,
           'SELECT * FROM car_rental_vehicles ORDER BY sort_order ASC, title ASC',
-        )
-        carRentalVehicleRows = cv ?? []
-      } catch {
-        carRentalVehicleRows = []
-      }
-      const [reviews] = await pool.query('SELECT * FROM reviews ORDER BY created_at DESC')
-      const [blogCategories] = await pool.query('SELECT * FROM blog_categories ORDER BY name')
-      const [posts] = await pool.query('SELECT * FROM blog_posts ORDER BY updated_at DESC')
-      const [gallery] = await pool.query('SELECT * FROM gallery_items ORDER BY updated_at DESC')
-      const [guides] = await pool.query('SELECT * FROM tour_guides ORDER BY id')
-      const [monthlyMetrics] = await pool.query(
-        'SELECT * FROM monthly_metrics ORDER BY sort_order ASC',
-      )
-      const [notifications] = await pool.query(
-        'SELECT * FROM admin_notifications ORDER BY created_at DESC',
-      )
-      const [activityLogs] = await pool.query(
-        'SELECT * FROM activity_logs ORDER BY at DESC LIMIT 200',
-      )
-      const [roleDefinitions] = await pool.query('SELECT * FROM role_definitions ORDER BY id')
-      const [settingsRow] = await pool.query(
-        'SELECT payload FROM site_settings WHERE singleton = 1 LIMIT 1',
-      )
-      const [adminSettingsRow] = await pool.query(
-        'SELECT payload FROM admin_settings WHERE singleton = 1 LIMIT 1',
-      )
+        ),
+        safeRows(pool, 'SELECT * FROM reviews ORDER BY created_at DESC'),
+        safeRows(pool, 'SELECT * FROM blog_categories ORDER BY name'),
+        safeRows(pool, 'SELECT * FROM blog_posts ORDER BY updated_at DESC'),
+        safeRows(pool, 'SELECT * FROM gallery_items ORDER BY updated_at DESC'),
+        safeRows(pool, 'SELECT * FROM tour_guides ORDER BY id'),
+        safeRows(pool, 'SELECT * FROM tour_booking_requests ORDER BY created_at DESC'),
+        safeRows(pool, 'SELECT id FROM hero_slides WHERE active_flag = 1'),
+        safeRows(pool, 'SELECT id FROM pricing_plans WHERE active_flag = 1'),
+        safeRows(pool, 'SELECT * FROM monthly_metrics ORDER BY sort_order ASC'),
+        safeRows(pool, 'SELECT * FROM admin_notifications ORDER BY created_at DESC'),
+        safeRows(pool, 'SELECT * FROM activity_logs ORDER BY at DESC LIMIT 200'),
+        safeRows(pool, 'SELECT * FROM role_definitions ORDER BY id'),
+        safeRows(pool, 'SELECT payload FROM site_settings WHERE singleton = 1 LIMIT 1'),
+        safeRows(pool, 'SELECT payload FROM admin_settings WHERE singleton = 1 LIMIT 1'),
+        safeRows(pool, 'SELECT id, guide_id FROM bookings WHERE guide_id IS NOT NULL'),
+      ])
 
       const settings = parseJson(settingsRow[0]?.payload, {})
       const adminSettings = parseJson(adminSettingsRow[0]?.payload, {})
@@ -76,9 +91,6 @@ export function registerBootstrapRoute(app, pool) {
         }
       }
 
-      const [bookRows] = await pool.query(
-        'SELECT id, guide_id FROM bookings WHERE guide_id IS NOT NULL',
-      )
       const guideBookings = {}
       for (const b of bookRows) {
         guideBookings[b.guide_id] = guideBookings[b.guide_id] ?? []
@@ -152,16 +164,22 @@ export function registerBootstrapRoute(app, pool) {
           }
         }),
         carRentalVehicles: carRentalVehicleRows.map((r) => mapCarRentalVehicle(r)),
-        reviews: reviews.map((r) => ({
-          id: r.id,
-          userId: r.user_id,
-          packageId: r.package_id,
-          rating: r.rating,
-          comment: r.comment,
-          status: r.status,
-          featured: !!r.featured,
-          createdAt: new Date(r.created_at).toISOString(),
-        })),
+        reviews: reviews.map((r) => {
+          const authorName = String(r.author_name ?? '').trim()
+          return {
+            id: r.id,
+            userId: r.user_id,
+            packageId: r.package_id,
+            authorName,
+            authorCountry: r.author_country ?? '',
+            photoUrl: r.photo_url ?? '',
+            rating: r.rating,
+            comment: r.comment,
+            status: r.status,
+            featured: !!r.featured,
+            createdAt: new Date(r.created_at).toISOString(),
+          }
+        }),
         blogCategories: blogCategories.map((c) => ({
           id: c.id,
           name: c.name,
@@ -195,11 +213,24 @@ export function registerBootstrapRoute(app, pool) {
           activeBookingIds: guideBookings[g.id] ?? [],
           updatedAt: new Date(g.updated_at).toISOString(),
         })),
-        monthlyMetrics: monthlyMetrics.map((m) => ({
-          month: m.month_label,
-          bookings: m.bookings,
-          revenueRwf: Number(m.revenue_rwf),
-        })),
+        tourBookingRequests: tourBookingRows.map(mapTourBookingRequest),
+        monthlyMetrics: resolveMonthlyMetrics(monthlyMetricRows, bookings, payments),
+        dashboardSummary: buildDashboardSummary({
+          rawBookings: bookings,
+          rawPayments: payments,
+          messages,
+          reviews,
+          carRentalRequests: carRentalRows,
+          tourBookingRequests: tourBookingRows,
+          destinations,
+          packages,
+          carRentalVehicles: carRentalVehicleRows,
+          posts,
+          gallery,
+          heroSlides: heroSlideRows,
+          pricingPlans: pricingPlanRows,
+          tourismUsers: users,
+        }),
         notifications: notifications.map((n) => ({
           id: n.id,
           type: n.type,

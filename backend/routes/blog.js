@@ -1,5 +1,40 @@
 import { randomUUID } from 'crypto'
 import { simpleGet, simpleList } from '../lib/helpers.js'
+import {
+  queueSubscriberContentUpdate,
+  shouldNotifyBlogPost,
+} from '../lib/subscriberNotify.js'
+
+function mapBlogPost(r) {
+  return {
+    id: r.id,
+    title: r.title,
+    slug: r.slug,
+    excerpt: r.excerpt,
+    body: r.body,
+    categoryId: r.category_id,
+    coverImageUrl: r.cover_image_url,
+    published: !!r.published,
+    updatedAt: new Date(r.updated_at).toISOString(),
+  }
+}
+
+function notifyBlogSubscribers(pool, post, updateType = 'updated') {
+  if (!shouldNotifyBlogPost(post)) return
+  const summary =
+    String(post.excerpt || post.body || '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 220) || 'New article on our travel blog.'
+  queueSubscriberContentUpdate(pool, {
+    kind: 'blog',
+    title: post.title,
+    summary,
+    slug: post.slug,
+    updateType,
+  })
+}
 
 export function registerBlogRoutes(app, pool) {
   app.get('/api/blog/categories', async (_req, res, next) => {
@@ -112,18 +147,9 @@ export function registerBlogRoutes(app, pool) {
         ],
       )
       const [rows] = await pool.query('SELECT * FROM blog_posts WHERE id = ?', [id])
-      const r = rows[0]
-      res.status(201).json({
-        id: r.id,
-        title: r.title,
-        slug: r.slug,
-        excerpt: r.excerpt,
-        body: r.body,
-        categoryId: r.category_id,
-        coverImageUrl: r.cover_image_url,
-        published: !!r.published,
-        updatedAt: new Date(r.updated_at).toISOString(),
-      })
+      const post = mapBlogPost(rows[0])
+      notifyBlogSubscribers(pool, post, 'new')
+      res.status(201).json(post)
     } catch (e) {
       next(e)
     }
@@ -159,17 +185,9 @@ export function registerBlogRoutes(app, pool) {
       const [rows] = await pool.query('SELECT * FROM blog_posts WHERE id = ?', [id])
       const r = rows[0]
       if (!r) return res.status(404).json({ error: 'Not found' })
-      res.json({
-        id: r.id,
-        title: r.title,
-        slug: r.slug,
-        excerpt: r.excerpt,
-        body: r.body,
-        categoryId: r.category_id,
-        coverImageUrl: r.cover_image_url,
-        published: !!r.published,
-        updatedAt: new Date(r.updated_at).toISOString(),
-      })
+      const post = mapBlogPost(r)
+      notifyBlogSubscribers(pool, post, 'updated')
+      res.json(post)
     } catch (e) {
       next(e)
     }

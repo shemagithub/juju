@@ -5,7 +5,7 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
     <div
       data-slot='table-container'
-      className='relative w-full overflow-x-auto'
+      className='relative w-full min-w-0 overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]'
     >
       <table
         data-slot='table'
@@ -67,7 +67,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
     <th
       data-slot='table-head'
       className={cn(
-        'h-10 px-2 text-start align-middle font-medium whitespace-nowrap text-foreground [&>[role=checkbox]]:translate-y-[2px]',
+        'h-10 px-2 text-start align-middle text-xs font-medium whitespace-nowrap text-foreground sm:text-sm [&>[role=checkbox]]:translate-y-[2px]',
         className
       )}
       {...props}
@@ -80,7 +80,7 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
     <td
       data-slot='table-cell'
       className={cn(
-        'p-2 align-middle whitespace-nowrap [&>[role=checkbox]]:translate-y-[2px]',
+        'max-w-[12rem] truncate p-2 align-middle text-xs sm:max-w-none sm:whitespace-nowrap sm:text-sm [&>[role=checkbox]]:translate-y-[2px]',
         className
       )}
       {...props}

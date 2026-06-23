@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { simpleGet, simpleList } from '../lib/helpers.js'
+import { queueStatusNotification, readCurrentStatus } from '../lib/statusNotify.js'
 
 function mapBooking(r) {
   const sd =
@@ -74,7 +75,9 @@ export function registerBookingRoutes(app, pool) {
         fields.push('start_date = ?')
         vals.push(String(b.startDate).slice(0, 10))
       }
+      let previousStatus = null
       if (b.status !== undefined) {
+        previousStatus = await readCurrentStatus(pool, 'bookings', id)
         fields.push('status = ?')
         vals.push(b.status)
       }
@@ -89,6 +92,9 @@ export function registerBookingRoutes(app, pool) {
       if (!fields.length) return res.status(400).json({ error: 'No fields' })
       vals.push(id)
       await pool.query(`UPDATE bookings SET ${fields.join(', ')} WHERE id = ?`, vals)
+      if (b.status !== undefined) {
+        queueStatusNotification(pool, 'booking', id, previousStatus, b.status)
+      }
       await simpleGet(pool, res, 'SELECT * FROM bookings WHERE id = ?', id, mapBooking)
     } catch (e) {
       next(e)

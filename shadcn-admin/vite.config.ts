@@ -1,60 +1,77 @@
 /// <reference types="vitest/config" />
 import path from 'path'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { playwright } from '@vitest/browser-playwright'
 
 // https://vite.dev/config/
-export default defineConfig({
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:4000',
-        changeOrigin: true,
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const apiTarget = (env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '')
+
+  return {
+    server: {
+      proxy: {
+        '/api': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/uploads': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/health': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: true,
+        },
       },
-      '/uploads': {
-        target: 'http://localhost:4000',
-        changeOrigin: true,
+    },
+    plugins: [
+      {
+        name: 'inject-api-base-meta',
+        transformIndexHtml(html) {
+          return html.replace(
+            '<meta name="api-base" content="" />',
+            `<meta name="api-base" content="${apiTarget}" />`,
+          )
+        },
       },
-      '/health': {
-        target: 'http://localhost:4000',
-        changeOrigin: true,
+      tanstackRouter({
+        target: 'react',
+        autoCodeSplitting: true,
+      }),
+      react(),
+      tailwindcss(),
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
       },
     },
-  },
-  plugins: [
-    tanstackRouter({
-      target: 'react',
-      autoCodeSplitting: true,
-    }),
-    react(),
-    tailwindcss(),
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+    test: {
+      silent: 'passed-only',
+      unstubEnvs: true,
+      browser: {
+        enabled: true,
+        provider: playwright(),
+        instances: [{ browser: 'chromium' }],
+      },
+      coverage: {
+        // include: ['src/**/*.{js,jsx,ts,tsx}'], // Uncomment to expand the report to all src/**/* so untested modules appear as 0% coverage.
+        exclude: [
+          'src/components/ui/**',
+          'src/assets/**',
+          'src/tanstack-table.d.ts',
+          'src/routeTree.gen.ts',
+          'src/test-utils/**',
+          'src/routes/**',
+        ],
+      },
     },
-  },
-  test: {
-    silent: 'passed-only',
-    unstubEnvs: true,
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      instances: [{ browser: 'chromium' }],
-    },
-    coverage: {
-      // include: ['src/**/*.{js,jsx,ts,tsx}'], // Uncomment to expand the report to all src/**/* so untested modules appear as 0% coverage.
-      exclude: [
-        'src/components/ui/**',
-        'src/assets/**',
-        'src/tanstack-table.d.ts',
-        'src/routeTree.gen.ts',
-        'src/test-utils/**',
-        'src/routes/**',
-      ],
-    },
-  },
+  }
 })

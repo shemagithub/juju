@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { RefreshCw } from 'lucide-react'
 import { api } from '@/lib/api'
 import { handleServerError } from '@/lib/handle-server-error'
@@ -13,15 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
+import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
 import {
   Table,
   TableBody,
@@ -31,8 +26,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { AdminStatusSelect } from '@/components/shared/admin-status-select'
 import { ResourceRowActions } from '@/components/shared/resource-row-actions'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
+import { USER_STATUSES } from '../lib/status-options'
 import { useUsersApiQuery } from '../hooks/use-tourism-queries'
 
 type ApiUser = {
@@ -57,7 +54,7 @@ const roleOptions = [
   'superadmin',
 ] as const
 
-const statusOptions = ['active', 'inactive', 'suspended'] as const
+const statusOptions = USER_STATUSES
 
 export function TourismUsersSegmentPage({
   segment,
@@ -76,6 +73,18 @@ export function TourismUsersSegmentPage({
   const [editSaving, setEditSaving] = useState(false)
   const [deleteU, setDeleteU] = useState<ApiUser | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      await api.patch(`/api/users/${id}`, { status })
+    },
+    onSuccess: async () => {
+      toast.success('User status updated — user notified by email')
+      await qc.invalidateQueries({ queryKey: ['users'] })
+      await qc.invalidateQueries({ queryKey: ['bootstrap'] })
+    },
+    onError: handleServerError,
+  })
 
   const rows = useMemo(() => {
     const list = data as ApiUser[]
@@ -148,7 +157,7 @@ export function TourismUsersSegmentPage({
             Filtered from `/api/users` by role. Full list: <strong>All Users</strong>.
           </CardDescription>
         </CardHeader>
-        <CardContent className='overflow-x-auto'>
+        <CardContent className='min-w-0'>
           {isPending ? (
             <p className='text-muted-foreground text-sm'>Loading…</p>
           ) : (
@@ -172,9 +181,19 @@ export function TourismUsersSegmentPage({
                     <TableCell>
                       <Badge variant='outline'>{u.role}</Badge>
                     </TableCell>
-                    <TableCell>{u.status}</TableCell>
+                    <TableCell>
+                      <AdminStatusSelect
+                        value={u.status}
+                        options={statusOptions}
+                        disabled={updateStatus.isPending}
+                        onChange={(status) =>
+                          updateStatus.mutate({ id: u.id, status })
+                        }
+                      />
+                    </TableCell>
                     <TableCell className='text-right'>
                       <ResourceRowActions
+                        itemLabel={`${u.firstName} ${u.lastName}`.trim() || u.email}
                         onView={() => setViewU(u)}
                         onEdit={() => setEditU({ ...u })}
                         onDelete={() => setDeleteU(u)}
@@ -188,43 +207,41 @@ export function TourismUsersSegmentPage({
         </CardContent>
       </Card>
 
-      <Dialog open={!!viewU} onOpenChange={(o) => !o && setViewU(null)}>
-        <DialogContent className='sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>
-              {viewU ? `${viewU.firstName} ${viewU.lastName}`.trim() : 'User'}
-            </DialogTitle>
-            <DialogDescription className='font-mono text-xs'>{viewU?.id}</DialogDescription>
-          </DialogHeader>
-          {viewU ? (
-            <div className='space-y-2 text-sm'>
-              <p>
-                <span className='text-muted-foreground'>Email:</span> {viewU.email}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Phone:</span> {viewU.phone || '—'}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Role:</span> {viewU.role}
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Status:</span> {viewU.status}
-              </p>
-              <p className='text-muted-foreground text-xs'>
-                Joined {new Date(viewU.createdAt).toLocaleString()}
-              </p>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ResourceViewDialog
+        open={!!viewU}
+        onOpenChange={(o) => !o && setViewU(null)}
+        title={viewU ? `${viewU.firstName} ${viewU.lastName}`.trim() : 'User'}
+        description={viewU?.email}
+        onEdit={viewU ? () => setEditU({ ...viewU }) : undefined}
+      >
+        {viewU ? (
+          <div className='space-y-2 text-sm'>
+            <p>
+              <span className='text-muted-foreground'>Phone:</span> {viewU.phone || '—'}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Role:</span> {viewU.role}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Status:</span> {viewU.status}
+            </p>
+            <p className='text-muted-foreground text-xs'>
+              Joined {new Date(viewU.createdAt).toLocaleString()}
+            </p>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
 
-      <Dialog open={!!editU} onOpenChange={(o) => !o && setEditU(null)}>
-        <DialogContent className='sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>Edit user</DialogTitle>
-          </DialogHeader>
-          {editU ? (
-            <form onSubmit={saveEdit} className='space-y-4'>
+      <ResourceEditDialog
+        open={!!editU}
+        onOpenChange={(o) => !o && setEditU(null)}
+        title='Edit user'
+        itemName={editU ? `${editU.firstName} ${editU.lastName}`.trim() || editU.email : undefined}
+        onSubmit={saveEdit}
+        saving={editSaving}
+      >
+        {editU ? (
+          <>
               <div className='grid gap-4 sm:grid-cols-2'>
                 <div className='space-y-2'>
                   <Label htmlFor='ufn'>First name</Label>
@@ -296,13 +313,9 @@ export function TourismUsersSegmentPage({
                   ) : null}
                 </select>
               </div>
-              <Button type='submit' disabled={editSaving}>
-                {editSaving ? 'Saving…' : 'Save'}
-              </Button>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+          </>
+        ) : null}
+      </ResourceEditDialog>
 
       <ConfirmDialog
         open={!!deleteU}

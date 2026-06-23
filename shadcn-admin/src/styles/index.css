@@ -14,7 +14,15 @@
     @apply overflow-x-hidden;
   }
   body {
-    @apply min-h-svh w-full bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar;
+    @apply min-h-svh w-full min-w-0 bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar;
+  }
+
+  /* Tourism admin pages: prevent flex children from forcing horizontal scroll */
+  [data-slot='card'],
+  [data-slot='card-content'],
+  [data-slot='table-container'],
+  [data-layout='fixed'] {
+    min-width: 0;
   }
 
   /* Override Radix scroll locking for sticky headers */

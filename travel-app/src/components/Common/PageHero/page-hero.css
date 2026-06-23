@@ -1,0 +1,51 @@
+.page-hero {
+  position: relative;
+  background: url("../../../assets/images/slider/1.jpg") no-repeat center center;
+  background-size: cover;
+  padding: 160px 0 80px;
+  text-align: center;
+}
+
+.page-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(15, 79, 79, 0.9), rgba(26, 107, 107, 0.8));
+}
+
+.page-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.page-breadcrumb {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--primaryClr);
+  margin-bottom: 12px;
+}
+
+.page-hero h1 {
+  font-family: var(--fontFamily1);
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+
+.page-hero p {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.page-content {
+  padding: 80px 0;
+}
+
+.page-content .section-title {
+  margin-bottom: 16px;
+}

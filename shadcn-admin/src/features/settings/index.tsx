@@ -1,12 +1,9 @@
-import { Outlet } from '@tanstack/react-router'
+import { Outlet, useRouterState } from '@tanstack/react-router'
 import { Monitor, Bell, Palette, Wrench, UserCog } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-import { ConfigDrawer } from '@/components/config-drawer'
+import { AdminHeaderToolbar } from '@/components/shared/admin-header-toolbar'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { SidebarNav } from './components/sidebar-nav'
 
 const sidebarNavItems = [
@@ -37,15 +34,28 @@ const sidebarNavItems = [
   },
 ]
 
+const SITE_SETTINGS_PATHS = new Set([
+  '/settings/content',
+  '/settings/contact',
+  '/settings/navigation',
+  '/settings/seo',
+  '/settings/social',
+  '/settings/legal',
+  '/settings/about',
+  '/settings/team',
+])
+
 export function Settings() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  if (SITE_SETTINGS_PATHS.has(pathname)) {
+    return <Outlet />
+  }
+
   return (
     <>
       {/* ===== Top Heading ===== */}
-      <Header>
-        <Search className='me-auto' />
-        <ThemeSwitch />
-        <ConfigDrawer />
-        <ProfileDropdown />
+      <Header fixed>
+        <AdminHeaderToolbar searchPlaceholder='Search settings…' />
       </Header>
 
       <Main fixed>

@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { useQueryClient } from '@tanstack/react-query'
-import { Plus, RefreshCw } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Plus, RefreshCw, Tags } from 'lucide-react'
 import { api } from '@/lib/api'
 import { handleServerError } from '@/lib/handle-server-error'
 import { toast } from 'sonner'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -26,15 +26,12 @@ import {
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { ImagesUploader } from '@/components/shared/image-uploader'
+import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
+import { AdminStatusSelect } from '@/components/shared/admin-status-select'
 import { ResourceRowActions } from '@/components/shared/resource-row-actions'
+import { PACKAGE_STATUSES } from '../lib/status-options'
+import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
 import {
   useDestinationsQuery,
@@ -46,7 +43,6 @@ type Pkg = {
   id: string
   title: string
   slug: string
-  priceRwf: number
   durationDays: number
   description: string
   status: string
@@ -56,7 +52,7 @@ type Pkg = {
   destinationIds?: string[]
 }
 
-type Cat = { id: string; name: string; slug: string }
+type Cat = { id: string; name: string; slug: string; packageCount?: number }
 
 export function TourismPackagesPage({
   variant,
@@ -81,6 +77,18 @@ function PackageListPage() {
   const [deletePkg, setDeletePkg] = useState<Pkg | null>(null)
   const [deleting, setDeleting] = useState(false)
 
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      await api.patch(`/api/tour-packages/${id}`, { status })
+    },
+    onSuccess: async () => {
+      toast.success('Package status updated')
+      await qc.invalidateQueries({ queryKey: ['tour-packages'] })
+      await qc.invalidateQueries({ queryKey: ['bootstrap'] })
+    },
+    onError: handleServerError,
+  })
+
   const saveEdit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editPkg) return
@@ -91,7 +99,6 @@ function PackageListPage() {
       await api.patch(`/api/tour-packages/${editPkg.id}`, {
         title: editPkg.title,
         slug: editPkg.slug,
-        priceRwf: editPkg.priceRwf,
         durationDays: editPkg.durationDays,
         description: editPkg.description,
         status: editPkg.status,
@@ -136,6 +143,12 @@ function PackageListPage() {
             <RefreshCw className='me-1 size-4' />
             Refresh
           </Button>
+          <Button variant='outline' size='sm' asChild>
+            <Link to='/tour-packages/categories'>
+              <Tags className='me-1 size-4' />
+              Categories
+            </Link>
+          </Button>
           <Button size='sm' asChild>
             <Link to='/tour-packages/new'>
               <Plus className='me-1 size-4' />
@@ -149,10 +162,10 @@ function PackageListPage() {
         <CardHeader>
           <CardTitle>All packages</CardTitle>
           <CardDescription>
-            Price in Rwf, duration in days, itinerary stored per package.
+            Duration in days, category, and itinerary stored per package.
           </CardDescription>
         </CardHeader>
-        <CardContent className='overflow-x-auto'>
+        <CardContent className='min-w-0'>
           {isPending ? (
             <p className='text-muted-foreground text-sm'>Loading…</p>
           ) : (
@@ -160,7 +173,6 @@ function PackageListPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
-                  <TableHead>Price (Rwf)</TableHead>
                   <TableHead>Days</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>
@@ -170,13 +182,20 @@ function PackageListPage() {
                 {(data as Pkg[]).map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className='font-medium'>{p.title}</TableCell>
-                    <TableCell>{p.priceRwf?.toLocaleString?.() ?? p.priceRwf}</TableCell>
                     <TableCell>{p.durationDays}</TableCell>
                     <TableCell>
-                      <Badge variant='outline'>{p.status}</Badge>
+                      <AdminStatusSelect
+                        value={p.status}
+                        options={PACKAGE_STATUSES}
+                        disabled={updateStatus.isPending}
+                        onChange={(status) =>
+                          updateStatus.mutate({ id: p.id, status })
+                        }
+                      />
                     </TableCell>
                     <TableCell className='text-right'>
                       <ResourceRowActions
+                        itemLabel={p.title}
                         onView={() => setViewPkg(p)}
                         onEdit={() => setEditPkg({ ...p, imageUrls: p.imageUrls ?? [] })}
                         onDelete={() => setDeletePkg(p)}
@@ -190,42 +209,47 @@ function PackageListPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!viewPkg} onOpenChange={(o) => !o && setViewPkg(null)}>
-        <DialogContent className='sm:max-w-2xl'>
-          <DialogHeader>
-            <DialogTitle>{viewPkg?.title}</DialogTitle>
-            <DialogDescription>
-              {viewPkg ? (
-                <span className='text-muted-foreground font-mono text-xs'>{viewPkg.slug}</span>
-              ) : null}
-            </DialogDescription>
-          </DialogHeader>
-          {viewPkg ? (
-            <div className='space-y-3 text-sm'>
-              <p>
-                <span className='text-muted-foreground'>Price:</span>{' '}
-                {viewPkg.priceRwf?.toLocaleString()} Rwf · {viewPkg.durationDays} day(s)
-              </p>
-              <p>
-                <span className='text-muted-foreground'>Status:</span> {viewPkg.status}
-              </p>
-              <div className='rounded-md border p-3'>
-                <p className='text-muted-foreground text-xs'>Description</p>
-                <p className='mt-1 whitespace-pre-wrap'>{viewPkg.description || '—'}</p>
-              </div>
-              <p className='text-muted-foreground text-xs'>ID: {viewPkg.id}</p>
+      <ResourceViewDialog
+        open={!!viewPkg}
+        onOpenChange={(o) => !o && setViewPkg(null)}
+        title={viewPkg?.title ?? 'Package'}
+        description={viewPkg?.slug}
+        size='2xl'
+        onEdit={
+          viewPkg
+            ? () => setEditPkg({ ...viewPkg, imageUrls: viewPkg.imageUrls ?? [] })
+            : undefined
+        }
+      >
+        {viewPkg ? (
+          <div className='space-y-3 text-sm'>
+            <p>
+              <span className='text-muted-foreground'>Duration:</span>{' '}
+              {viewPkg.durationDays} day(s)
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Status:</span> {viewPkg.status}
+            </p>
+            <div className='rounded-md border p-3'>
+              <p className='text-muted-foreground text-xs'>Description</p>
+              <p className='mt-1 whitespace-pre-wrap'>{viewPkg.description || '—'}</p>
             </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+            <p className='text-muted-foreground text-xs'>ID: {viewPkg.id}</p>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
 
-      <Dialog open={!!editPkg} onOpenChange={(o) => !o && setEditPkg(null)}>
-        <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-xl'>
-          <DialogHeader>
-            <DialogTitle>Edit package</DialogTitle>
-          </DialogHeader>
-          {editPkg ? (
-            <form onSubmit={saveEdit} className='space-y-4'>
+      <ResourceEditDialog
+        open={!!editPkg}
+        onOpenChange={(o) => !o && setEditPkg(null)}
+        title='Edit package'
+        itemName={editPkg?.title}
+        onSubmit={saveEdit}
+        saving={editSaving}
+        size='xl'
+      >
+        {editPkg ? (
+          <>
               <div className='space-y-2'>
                 <Label htmlFor='pt'>Title</Label>
                 <Input
@@ -243,31 +267,17 @@ function PackageListPage() {
                   onChange={(e) => setEditPkg({ ...editPkg, slug: e.target.value })}
                 />
               </div>
-              <div className='grid gap-4 sm:grid-cols-2'>
-                <div className='space-y-2'>
-                  <Label htmlFor='pp'>Price (Rwf)</Label>
-                  <Input
-                    id='pp'
-                    type='number'
-                    min={0}
-                    value={editPkg.priceRwf}
-                    onChange={(e) =>
-                      setEditPkg({ ...editPkg, priceRwf: Number(e.target.value) || 0 })
-                    }
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='pd'>Duration (days)</Label>
-                  <Input
-                    id='pd'
-                    type='number'
-                    min={1}
-                    value={editPkg.durationDays}
-                    onChange={(e) =>
-                      setEditPkg({ ...editPkg, durationDays: Number(e.target.value) || 1 })
-                    }
-                  />
-                </div>
+              <div className='space-y-2'>
+                <Label htmlFor='pd'>Duration (days)</Label>
+                <Input
+                  id='pd'
+                  type='number'
+                  min={1}
+                  value={editPkg.durationDays}
+                  onChange={(e) =>
+                    setEditPkg({ ...editPkg, durationDays: Number(e.target.value) || 1 })
+                  }
+                />
               </div>
               <div className='space-y-2'>
                 <Label htmlFor='pst'>Status</Label>
@@ -335,17 +345,13 @@ function PackageListPage() {
                 onChange={(urls) => setEditPkg({ ...editPkg, imageUrls: urls })}
                 required
               />
-              <Button type='submit' disabled={editSaving}>
-                {editSaving ? 'Saving…' : 'Save'}
-              </Button>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+          </>
+        ) : null}
+      </ResourceEditDialog>
 
       <ConfirmDialog
         open={!!deletePkg}
-        onOpenChange={(o) => (o ? null : setDeletePkg(null))}
+        onOpenChange={(o) => !o && setDeletePkg(null)}
         title='Delete tour package?'
         desc={<span>This removes the package and its itinerary links.</span>}
         destructive
@@ -361,7 +367,6 @@ function PackageNewPage() {
   const qc = useQueryClient()
   const { data: categories = [] } = usePackageCategoriesQuery()
   const [title, setTitle] = useState('')
-  const [priceRwf, setPriceRwf] = useState('')
   const [durationDays, setDurationDays] = useState('3')
   const [description, setDescription] = useState('')
   const [categoryId, setCategoryId] = useState('')
@@ -375,7 +380,6 @@ function PackageNewPage() {
     try {
       await api.post('/api/tour-packages', {
         title,
-        priceRwf: Number(priceRwf) || 0,
         durationDays: Number(durationDays) || 1,
         description,
         categoryId: categoryId || undefined,
@@ -394,7 +398,6 @@ function PackageNewPage() {
       await qc.invalidateQueries({ queryKey: ['tour-packages'] })
       await qc.invalidateQueries({ queryKey: ['bootstrap'] })
       setTitle('')
-      setPriceRwf('')
       setDescription('')
       setImageUrls([])
     } catch (err) {
@@ -429,29 +432,16 @@ function PackageNewPage() {
                 required
               />
             </div>
-            <div className='grid gap-4 sm:grid-cols-2'>
-              <div className='space-y-2'>
-                <Label htmlFor='price'>Price (Rwf)</Label>
-                <Input
-                  id='price'
-                  type='number'
-                  min={0}
-                  value={priceRwf}
-                  onChange={(e) => setPriceRwf(e.target.value)}
-                  required
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='days'>Duration (days)</Label>
-                <Input
-                  id='days'
-                  type='number'
-                  min={1}
-                  value={durationDays}
-                  onChange={(e) => setDurationDays(e.target.value)}
-                  required
-                />
-              </div>
+            <div className='space-y-2'>
+              <Label htmlFor='days'>Duration (days)</Label>
+              <Input
+                id='days'
+                type='number'
+                min={1}
+                value={durationDays}
+                onChange={(e) => setDurationDays(e.target.value)}
+                required
+              />
             </div>
             <div className='space-y-2'>
               <Label htmlFor='cat'>Category</Label>
@@ -498,6 +488,7 @@ function PackageCategoriesPage() {
   const qc = useQueryClient()
   const { data = [], isPending, refetch } = usePackageCategoriesQuery()
   const [name, setName] = useState('')
+  const [slug, setSlug] = useState('')
   const [pending, setPending] = useState(false)
   const [viewCat, setViewCat] = useState<Cat | null>(null)
   const [editCat, setEditCat] = useState<Cat | null>(null)
@@ -510,9 +501,13 @@ function PackageCategoriesPage() {
     if (!name.trim()) return
     setPending(true)
     try {
-      await api.post('/api/package-categories', { name: name.trim() })
+      await api.post('/api/package-categories', {
+        name: name.trim(),
+        slug: slug.trim() || undefined,
+      })
       toast.success('Category added')
       setName('')
+      setSlug('')
       await qc.invalidateQueries({ queryKey: ['package-categories'] })
       await qc.invalidateQueries({ queryKey: ['bootstrap'] })
     } catch (err) {
@@ -527,7 +522,10 @@ function PackageCategoriesPage() {
     if (!editCat?.name.trim()) return
     setEditCatSaving(true)
     try {
-      await api.patch(`/api/package-categories/${editCat.id}`, { name: editCat.name.trim() })
+      await api.patch(`/api/package-categories/${editCat.id}`, {
+        name: editCat.name.trim(),
+        slug: editCat.slug?.trim() || undefined,
+      })
       toast.success('Category updated')
       setEditCat(null)
       await qc.invalidateQueries({ queryKey: ['package-categories'] })
@@ -560,24 +558,46 @@ function PackageCategoriesPage() {
       title='Package categories'
       description='Group packages for browsing on the website.'
       actions={
-        <Button variant='outline' size='sm' onClick={() => void refetch()}>
-          <RefreshCw className='me-1 size-4' />
-          Refresh
-        </Button>
+        <div className='flex flex-wrap gap-2'>
+          <Button variant='outline' size='sm' asChild>
+            <Link to='/tour-packages'>All packages</Link>
+          </Button>
+          <Button variant='outline' size='sm' onClick={() => void refetch()}>
+            <RefreshCw className='me-1 size-4' />
+            Refresh
+          </Button>
+        </div>
       }
     >
       <Card className='mb-6'>
         <CardHeader>
           <CardTitle>Add category</CardTitle>
+          <CardDescription>
+            Categories appear as filters on the public packages page.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={add} className='flex flex-wrap items-end gap-2'>
-            <Input
-              placeholder='Category name'
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className='max-w-xs'
-            />
+            <div className='space-y-1'>
+              <Label htmlFor='pc-name'>Name</Label>
+              <Input
+                id='pc-name'
+                placeholder='Safari'
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className='w-48'
+              />
+            </div>
+            <div className='space-y-1'>
+              <Label htmlFor='pc-slug'>Slug (optional)</Label>
+              <Input
+                id='pc-slug'
+                placeholder='safari'
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                className='w-40'
+              />
+            </div>
             <Button type='submit' disabled={pending}>
               Add
             </Button>
@@ -594,6 +614,7 @@ function PackageCategoriesPage() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Slug</TableHead>
+                  <TableHead>Packages</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -602,8 +623,12 @@ function PackageCategoriesPage() {
                   <TableRow key={c.id}>
                     <TableCell>{c.name}</TableCell>
                     <TableCell className='text-muted-foreground'>{c.slug}</TableCell>
+                    <TableCell>
+                      <Badge variant='secondary'>{c.packageCount ?? 0}</Badge>
+                    </TableCell>
                     <TableCell className='text-right'>
                       <ResourceRowActions
+                        itemLabel={c.name}
                         onView={() => setViewCat(c)}
                         onEdit={() => setEditCat({ ...c })}
                         onDelete={() => setDeleteCat(c)}
@@ -617,52 +642,71 @@ function PackageCategoriesPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!viewCat} onOpenChange={(o) => !o && setViewCat(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{viewCat?.name}</DialogTitle>
-            <DialogDescription>Package category</DialogDescription>
-          </DialogHeader>
-          {viewCat ? (
-            <div className='space-y-2 text-sm'>
-              <p>
-                <span className='text-muted-foreground'>Slug:</span> {viewCat.slug}
-              </p>
-              <p className='font-mono text-xs'>{viewCat.id}</p>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ResourceViewDialog
+        open={!!viewCat}
+        onOpenChange={(o) => !o && setViewCat(null)}
+        title={viewCat?.name ?? 'Category'}
+        description='Package category'
+        onEdit={viewCat ? () => setEditCat({ ...viewCat }) : undefined}
+      >
+        {viewCat ? (
+          <div className='space-y-2 text-sm'>
+            <p>
+              <span className='text-muted-foreground'>Slug:</span> {viewCat.slug}
+            </p>
+            <p>
+              <span className='text-muted-foreground'>Packages:</span>{' '}
+              {viewCat.packageCount ?? 0}
+            </p>
+            <p className='font-mono text-xs'>{viewCat.id}</p>
+          </div>
+        ) : null}
+      </ResourceViewDialog>
 
-      <Dialog open={!!editCat} onOpenChange={(o) => !o && setEditCat(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit category</DialogTitle>
-          </DialogHeader>
-          {editCat ? (
-            <form onSubmit={saveCategory} className='space-y-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='pcn'>Name</Label>
-                <Input
-                  id='pcn'
-                  value={editCat.name}
-                  onChange={(e) => setEditCat({ ...editCat, name: e.target.value })}
-                  required
-                />
-              </div>
-              <Button type='submit' disabled={editCatSaving}>
-                {editCatSaving ? 'Saving…' : 'Save'}
-              </Button>
-            </form>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ResourceEditDialog
+        open={!!editCat}
+        onOpenChange={(o) => !o && setEditCat(null)}
+        title='Edit category'
+        itemName={editCat?.name}
+        onSubmit={saveCategory}
+        saving={editCatSaving}
+      >
+        {editCat ? (
+          <div className='space-y-3'>
+            <div className='space-y-2'>
+              <Label htmlFor='pcn'>Name</Label>
+              <Input
+                id='pcn'
+                value={editCat.name}
+                onChange={(e) => setEditCat({ ...editCat, name: e.target.value })}
+                required
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='pcs'>Slug</Label>
+              <Input
+                id='pcs'
+                value={editCat.slug}
+                onChange={(e) => setEditCat({ ...editCat, slug: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+        ) : null}
+      </ResourceEditDialog>
 
       <ConfirmDialog
         open={!!deleteCat}
-        onOpenChange={(o) => (o ? null : setDeleteCat(null))}
+        onOpenChange={(o) => !o && setDeleteCat(null)}
         title='Delete category?'
-        desc={<span>Remove {deleteCat?.name}? Packages using it may need reassignment.</span>}
+        desc={
+          <span>
+            Remove {deleteCat?.name}?
+            {(deleteCat?.packageCount ?? 0) > 0
+              ? ` ${deleteCat?.packageCount} package(s) still use this category — reassign them first.`
+              : ' This cannot be undone.'}
+          </span>
+        }
         destructive
         isLoading={deletingCat}
         confirmText={deletingCat ? 'Deleting…' : 'Delete'}
@@ -673,12 +717,64 @@ function PackageCategoriesPage() {
 }
 
 function PackageItinerariesPage() {
+  const qc = useQueryClient()
   const { data = [], isPending, refetch } = useTourPackagesQuery()
+  const [viewPkg, setViewPkg] = useState<Pkg | null>(null)
+  const [editPkg, setEditPkg] = useState<Pkg | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
+
+  const saveItinerary = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editPkg) return
+    setEditSaving(true)
+    try {
+      await api.patch(`/api/tour-packages/${editPkg.id}`, {
+        itinerary: editPkg.itinerary ?? [],
+      })
+      toast.success('Itinerary updated')
+      setEditPkg(null)
+      await qc.invalidateQueries({ queryKey: ['tour-packages'] })
+      await qc.invalidateQueries({ queryKey: ['bootstrap'] })
+    } catch (err) {
+      handleServerError(err)
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
+  const updateDay = (
+    dayIndex: number,
+    field: 'day' | 'title' | 'description',
+    value: string | number,
+  ) => {
+    if (!editPkg) return
+    const next = [...(editPkg.itinerary ?? [])]
+    next[dayIndex] = { ...next[dayIndex], [field]: value }
+    setEditPkg({ ...editPkg, itinerary: next })
+  }
+
+  const addDay = () => {
+    if (!editPkg) return
+    const days = editPkg.itinerary ?? []
+    const nextDay = days.length ? Math.max(...days.map((d) => d.day)) + 1 : 1
+    setEditPkg({
+      ...editPkg,
+      itinerary: [...days, { day: nextDay, title: '', description: '' }],
+    })
+  }
+
+  const removeDay = (dayIndex: number) => {
+    if (!editPkg) return
+    setEditPkg({
+      ...editPkg,
+      itinerary: (editPkg.itinerary ?? []).filter((_, i) => i !== dayIndex),
+    })
+  }
 
   return (
     <TourismAdminShell
       title='Itineraries'
-      description='Day-by-day plans attached to each package. Edit full detail via API or future package editor.'
+      description='Day-by-day plans attached to each package.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>
           <RefreshCw className='me-1 size-4' />
@@ -694,16 +790,26 @@ function PackageItinerariesPage() {
             <div className='space-y-6'>
               {(data as Pkg[]).map((p) => (
                 <div key={p.id} className='rounded-lg border p-4'>
-                  <h3 className='mb-2 font-semibold'>{p.title}</h3>
+                  <div className='mb-2 flex items-start justify-between gap-2'>
+                    <h3 className='font-semibold'>{p.title}</h3>
+                    <ResourceRowActions
+                      onView={() => setViewPkg(p)}
+                      onEdit={() => setEditPkg({ ...p, itinerary: [...(p.itinerary ?? [])] })}
+                    />
+                  </div>
                   <ul className='text-muted-foreground list-inside list-decimal space-y-1 text-sm'>
-                    {(p.itinerary ?? []).map((d) => (
-                      <li key={d.day}>
-                        <span className='text-foreground font-medium'>
-                          Day {d.day}: {d.title}
-                        </span>{' '}
-                        — {d.description}
-                      </li>
-                    ))}
+                    {(p.itinerary ?? []).length === 0 ? (
+                      <li className='list-none'>No itinerary days yet.</li>
+                    ) : (
+                      (p.itinerary ?? []).map((d) => (
+                        <li key={d.day}>
+                          <span className='text-foreground font-medium'>
+                            Day {d.day}: {d.title}
+                          </span>{' '}
+                          — {d.description}
+                        </li>
+                      ))
+                    )}
                   </ul>
                 </div>
               ))}
@@ -711,6 +817,74 @@ function PackageItinerariesPage() {
           )}
         </CardContent>
       </Card>
+
+      <ResourceViewDialog
+        open={!!viewPkg}
+        onOpenChange={(o) => !o && setViewPkg(null)}
+        title={viewPkg?.title ?? 'Itinerary'}
+        description='Package itinerary'
+        size='2xl'
+        onEdit={viewPkg ? () => setEditPkg({ ...viewPkg }) : undefined}
+      >
+        {viewPkg ? (
+          <ol className='list-decimal space-y-3 ps-4 text-sm'>
+            {(viewPkg.itinerary ?? []).map((d) => (
+              <li key={d.day}>
+                <p className='font-medium'>
+                  Day {d.day}: {d.title}
+                </p>
+                <p className='text-muted-foreground mt-1 whitespace-pre-wrap'>{d.description}</p>
+              </li>
+            ))}
+          </ol>
+        ) : null}
+      </ResourceViewDialog>
+
+      <ResourceEditDialog
+        open={!!editPkg}
+        onOpenChange={(o) => !o && setEditPkg(null)}
+        title='Edit itinerary'
+        itemName={editPkg?.title}
+        onSubmit={saveItinerary}
+        saving={editSaving}
+        saveLabel='Save itinerary'
+        size='2xl'
+      >
+        {editPkg ? (
+          <>
+            {(editPkg.itinerary ?? []).map((d, idx) => (
+              <div key={idx} className='space-y-2 rounded-md border p-3'>
+                <div className='flex items-center justify-between gap-2'>
+                  <Label>Day {d.day}</Label>
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    size='sm'
+                    className='text-destructive'
+                    onClick={() => removeDay(idx)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+                <Input
+                  placeholder='Title'
+                  value={d.title}
+                  onChange={(e) => updateDay(idx, 'title', e.target.value)}
+                />
+                <Textarea
+                  placeholder='Description'
+                  value={d.description}
+                  onChange={(e) => updateDay(idx, 'description', e.target.value)}
+                  rows={2}
+                />
+              </div>
+            ))}
+            <Button type='button' variant='outline' size='sm' onClick={addDay}>
+              Add day
+            </Button>
+          </>
+        ) : null}
+      </ResourceEditDialog>
     </TourismAdminShell>
   )
 }
