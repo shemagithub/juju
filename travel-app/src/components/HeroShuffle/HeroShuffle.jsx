@@ -13,7 +13,6 @@ const DEFAULT_SLIDES = [
     title: "VOLCANOES NATIONAL PARK",
     description:
       "Trek through misty bamboo forests to meet mountain gorillas in their natural habitat — one of Africa's most profound wildlife encounters.",
-    image: heroSlide1,
     cardTitle: "VOLCANOES NP",
     cardSubtitle: "Rwanda — Gorillas",
     link: "/destinations",
@@ -24,7 +23,6 @@ const DEFAULT_SLIDES = [
     title: "AKAGERA NATIONAL PARK",
     description:
       "Experience Big Five safaris across rolling savannas, boat cruises on Lake Ihema, and unforgettable sunsets over the African plains.",
-    image: heroSlide2,
     cardTitle: "AKAGERA SAFARI",
     cardSubtitle: "Rwanda — Wildlife",
     link: "/destinations",
@@ -35,7 +33,6 @@ const DEFAULT_SLIDES = [
     title: "NYUNGWE FOREST",
     description:
       "Walk Africa's longest canopy bridge, track chimpanzees through ancient rainforest, and discover waterfalls hidden in the mist.",
-    image: heroSlide3,
     cardTitle: "NYUNGWE FOREST",
     cardSubtitle: "Rwanda — Canopy",
     link: "/destinations",
@@ -46,7 +43,6 @@ const DEFAULT_SLIDES = [
     title: "LAKE KIVU",
     description:
       "Relax on serene lakeside shores, explore coffee plantations, and unwind between mountain adventures in Rwanda's largest lake.",
-    image: heroSlide4,
     cardTitle: "LAKE KIVU",
     cardSubtitle: "Rwanda — Lakeside",
     link: "/destinations",

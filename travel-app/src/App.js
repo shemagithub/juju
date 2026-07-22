@@ -9,6 +9,7 @@ import WhatsAppFloat from "./components/WhatsAppFloat/WhatsAppFloat";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext";
 import { CurrencyProvider } from "./context/CurrencyContext";
 import PageSeo from "./components/Seo/PageSeo";
+import ScrollToTop from "./components/Common/ScrollToTop/ScrollToTop";
 
 const Home = lazy(() => import("./pages/Home/Home"));
 const Services = lazy(() => import("./pages/Services/Services"));
@@ -37,6 +38,7 @@ function App() {
     <SiteSettingsProvider>
       <CurrencyProvider>
         <PageSeo />
+        <ScrollToTop />
         <Header />
         <main className="site-main">
           <Suspense fallback={<PageLoader />}>
