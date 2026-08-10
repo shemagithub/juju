@@ -162,8 +162,7 @@ const Contact = () => {
     },
     {
       question: "Can I contact you on WhatsApp?",
-      answer:
-        "Absolutely! Reach us at +250 788 123 456. We respond quickly via WhatsApp during business hours.",
+      answer: `Absolutely! Reach us at ${contactPhone}. We respond quickly via WhatsApp during business hours.`,
     },
     {
       question: "What are your working hours?",
@@ -307,7 +306,7 @@ const Contact = () => {
                           value={formData.phone}
                           onChange={handleInputChange}
                           required
-                          placeholder="788 123 456"
+                          placeholder="799 608 178"
                           disabled={submitting}
                         />
                       </InputGroup>

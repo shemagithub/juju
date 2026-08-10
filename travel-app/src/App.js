@@ -18,6 +18,7 @@ const Packages = lazy(() => import("./pages/Packages/Packages"));
 const Destinations = lazy(() => import("./pages/Destinations/Destinations"));
 const Gallery = lazy(() => import("./pages/Gallery/Gallery"));
 const Blog = lazy(() => import("./pages/Blog/Blog"));
+const BlogDetail = lazy(() => import("./pages/Blog/BlogDetail"));
 const Contact = lazy(() => import("./pages/Contact/Contact"));
 const Book = lazy(() => import("./pages/Book/Book"));
 const CarRental = lazy(() => import("./pages/CarRental/CarRental"));
@@ -52,6 +53,7 @@ function App() {
               <Route path="/destinations" element={<Destinations />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:id" element={<BlogDetail />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/book" element={<Book />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />

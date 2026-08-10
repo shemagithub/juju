@@ -738,7 +738,7 @@ const Book = () => {
                           name="phone"
                           value={bookingData.phone}
                           onChange={handleInputChange}
-                          placeholder="+250 788 123 456"
+                          placeholder="+250 799 608 178"
                           required
                         />
                       </Col>
@@ -749,7 +749,7 @@ const Book = () => {
                           name="whatsapp"
                           value={bookingData.whatsapp}
                           onChange={handleInputChange}
-                          placeholder="+250 788 123 456"
+                          placeholder="+250 799 608 178"
                         />
                       </Col>
                       <Col md="6" className="mb-3">

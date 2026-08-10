@@ -1,62 +1,14 @@
 import { resolveMediaUrl } from "./backendApi";
 import { DEFAULT_SITE_SETTINGS } from "../config/defaultSiteSettings";
+import PAGE_SEO_TABLE from "../config/pageSeo.json";
 
-const PAGE_SEO = {
-  "/": {},
-  "/about": {
-    title: "About Us",
-    description:
-      "Learn about our Rwanda tour team, mission, and why travelers trust us for gorilla trekking, safaris, and custom East Africa adventures.",
-  },
-  "/packages": {
-    title: "Tour Packages",
-    description:
-      "Browse gorilla trekking, wildlife safari, and custom Rwanda tour packages with expert local guides and transparent pricing.",
-  },
-  "/car-rental": {
-    title: "Car Rental",
-    description:
-      "Rent safari 4x4s, SUVs, and economy cars in Rwanda for self-drive or chauffeur trips across Kigali and national parks.",
-  },
-  "/destinations": {
-    title: "Travel Guide",
-    description:
-      "Explore Rwanda destinations — Volcanoes National Park, Akagera, Nyungwe, Lake Kivu, and Kigali travel tips from local experts.",
-  },
-  "/blog": {
-    title: "Travel Blog",
-    description:
-      "Rwanda travel tips, gorilla permit updates, safari guides, and destination stories from our local tour experts.",
-  },
-  "/contact": {
-    title: "Contact Us",
-    description:
-      "Contact our Rwanda travel team for tour quotes, gorilla permits, car hire, and custom itinerary planning.",
-  },
-  "/gallery": {
-    title: "Photo Gallery",
-    description:
-      "See photos from gorilla trekking, wildlife safaris, and Rwanda landscapes captured on our tours.",
-  },
-  "/book": {
-    title: "Book a Tour",
-    description:
-      "Book gorilla trekking, safaris, and Rwanda tours online — secure requests with flexible payment options.",
-  },
-  "/services": {
-    title: "Our Services",
-    description:
-      "Tour packages, car rental, airport transfers, and bespoke Rwanda travel services from a licensed local operator.",
-  },
-  "/privacy": {
-    title: "Privacy Policy",
-    description: "How we collect, use, and protect your personal information when you book Rwanda tours with us.",
-  },
-  "/terms": {
-    title: "Terms & Conditions",
-    description: "Booking terms, cancellation policy, and conditions for Rwanda tour and car rental services.",
-  },
-};
+/**
+ * Shared with scripts/generate-seo.js, which bakes the same titles and
+ * descriptions into per-route HTML at build time so crawlers see them
+ * without executing JavaScript.
+ */
+const PAGE_SEO = PAGE_SEO_TABLE.pages;
+const PAGE_SEO_PREFIXES = PAGE_SEO_TABLE.prefixes;
 
 function normalizePath(pathname = "/") {
   const p = String(pathname || "/").split("?")[0].split("#")[0];
@@ -78,16 +30,11 @@ export function resolvePublicSiteUrl(settings = {}, originFallback = "") {
 
 export function getPageSeo(pathname) {
   const path = normalizePath(pathname);
-  if (PAGE_SEO[path]) return { path, ...PAGE_SEO[path] };
+  const exact = PAGE_SEO[path];
+  if (exact) return { path, title: exact.title, description: exact.description };
 
-  if (path.startsWith("/car-rental/")) {
-    return {
-      path,
-      title: "Car Rental Details",
-      description:
-        "Vehicle details, daily rates, and booking for Rwanda car rental — safari 4x4s, SUVs, and more.",
-    };
-  }
+  const prefix = PAGE_SEO_PREFIXES.find((p) => path.startsWith(p.match));
+  if (prefix) return { path, title: prefix.title, description: prefix.description };
 
   return { path };
 }

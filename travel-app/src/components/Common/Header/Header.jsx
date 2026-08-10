@@ -22,21 +22,9 @@ const Header = () => {
     setLogoFailed(false);
   }, [logoUrl]);
 
-  useEffect(() => {
-    const isSticky = () => {
-      const header = document.querySelector(".header-section");
-      if (!header) return;
-      window.scrollY >= 80
-        ? header.classList.add("is-sticky")
-        : header.classList.remove("is-sticky");
-    };
-    window.addEventListener("scroll", isSticky);
-    return () => window.removeEventListener("scroll", isSticky);
-  }, []);
-
   return (
     <>
-      <header className="header-section">
+      <header className="header-section is-sticky">
         <Container>
           <Navbar expand="lg" className="header-navbar p-0">
             <Navbar.Brand className="header-brand-col">

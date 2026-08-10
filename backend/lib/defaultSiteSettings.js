@@ -9,9 +9,9 @@ export const DEFAULT_SITE_SETTINGS = {
     'Gorilla trekking, wildlife safaris, and unforgettable East African adventures with local experts.',
   logoUrl: '',
   contactEmail: 'info@rwandaquest.com',
-  contactPhone: '+250 788 123 456',
-  emergencyPhone: '+250 788 123 499',
-  whatsapp: '250788123456',
+  contactPhone: '+250 799 608 178',
+  emergencyPhone: '+250 799 608 178',
+  whatsapp: '250799608178',
   address: 'KG 123 St, Kigali, Rwanda',
   workingHours: 'Monday – Sunday: 8:00 AM – 6:00 PM (Kigali Time)',
   companyDescription:

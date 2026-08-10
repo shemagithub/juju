@@ -3,7 +3,7 @@
  */
 (function bootstrapSiteMeta() {
   var DEFAULTS = {
-    brandName: "RwandaQuest",
+    brandName: "RwandaQuestTours",
     heroSubtitle:
       "Gorilla trekking, wildlife safaris, and unforgettable East African adventures with local experts.",
     companyDescription:
@@ -11,8 +11,8 @@
     metaTitle: "RwandaQuest Tours — Gorilla Trekking & Safari Rwanda",
     metaDescription:
       "Book gorilla trekking, wildlife safaris, car rental, and custom Rwanda tours with RwandaQuest.",
-    contactPhone: "+250 788 123 456",
-    contactEmail: "info@rwandaquest.com",
+    contactPhone: "+250 799 608 178",
+    contactEmail: "info@rwandaquesttours.com",
     address: "KG 123 St, Kigali, Rwanda",
     workingHours: "Monday – Sunday: 8:00 AM – 6:00 PM (Kigali Time)",
     publicSiteUrl: "",
@@ -51,6 +51,23 @@
       return window.location.origin.replace(/\/$/, "");
     }
     return configured || "https://rwandaquesttours.com";
+  }
+
+  /** Current route, normalised the same way src/utils/seo.js does. */
+  function currentPath() {
+    var p = String((window.location && window.location.pathname) || "/");
+    p = p.split("?")[0].split("#")[0];
+    if (p === "/") return "/";
+    return p.replace(/\/+$/, "") || "/";
+  }
+
+  /**
+   * Set by scripts/generate-seo.js on prerendered route HTML. When present the
+   * page already carries route-specific title/description tags, so site-wide
+   * values from the settings API must not overwrite them.
+   */
+  function isPrerendered() {
+    return !!document.querySelector('meta[name="seo-prerendered"]');
   }
 
   function upsertMeta(attr, key, content) {
@@ -101,6 +118,9 @@
       DEFAULTS.metaDescription;
     var title = metaTitle || brandName + " — " + heroSubtitle.split(".")[0];
     var siteUrl = resolveSiteUrl(settings);
+    var path = currentPath();
+    var pageUrl = path === "/" ? siteUrl + "/" : siteUrl + path;
+    var keepPageTags = isPrerendered();
     var logoUrl = resolveMediaUrl(settings.logoUrl || "");
     var imageUrl = logoUrl || siteUrl + "/logo512.png";
     var keywords = [
@@ -113,25 +133,28 @@
       "Rwanda car rental",
     ].join(", ");
 
-    document.title = title;
-    upsertMeta("name", "description", metaDescription);
+    if (!keepPageTags) {
+      document.title = title;
+      upsertMeta("name", "description", metaDescription);
+      upsertMeta("property", "og:title", title);
+      upsertMeta("property", "og:description", metaDescription);
+      upsertMeta("name", "twitter:title", title);
+      upsertMeta("name", "twitter:description", metaDescription);
+    }
+
     upsertMeta("name", "keywords", keywords);
     upsertMeta("name", "author", brandName);
     upsertMeta("name", "robots", "index, follow, max-image-preview:large");
 
-    upsertLink("canonical", siteUrl + "/", "site-canonical");
+    upsertLink("canonical", pageUrl, "site-canonical");
 
     upsertMeta("property", "og:type", "website");
     upsertMeta("property", "og:site_name", brandName);
-    upsertMeta("property", "og:title", title);
-    upsertMeta("property", "og:description", metaDescription);
-    upsertMeta("property", "og:url", siteUrl + "/");
+    upsertMeta("property", "og:url", pageUrl);
     upsertMeta("property", "og:image", imageUrl);
     upsertMeta("property", "og:locale", "en_RW");
 
     upsertMeta("name", "twitter:card", "summary_large_image");
-    upsertMeta("name", "twitter:title", title);
-    upsertMeta("name", "twitter:description", metaDescription);
     upsertMeta("name", "twitter:image", imageUrl);
 
     if (logoUrl) {

@@ -19,9 +19,7 @@ import heroSlide4 from "../../assets/images/gallery/g5.jpg";
 import blogImgA from "../../assets/images/tour/paris.png";
 import blogImgB from "../../assets/images/tour/phuket.png";
 import blogImgC from "../../assets/images/tour/bali-1.png";
-import testimonial1 from "../../assets/images/gallery/g1.jpg";
-import testimonial2 from "../../assets/images/gallery/g3.jpg";
-import testimonial3 from "../../assets/images/gallery/g4.jpg";
+import rwandaFallbackShot from "../../assets/images/slider/1.jpg";
 import dest1 from "../../assets/images/tour/bali-1.png";
 import dest2 from "../../assets/images/tour/bangkok.png";
 import dest3 from "../../assets/images/tour/cancun.png";
@@ -138,6 +136,7 @@ const Home = () => {
   const [heroSlides, setHeroSlides] = useState(HERO_SLIDES_FALLBACK);
   const [testimonials, setTestimonials] = useState([]);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [rwandaShots, setRwandaShots] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]);
   const [contentLoading, setContentLoading] = useState(true);
   const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "", message: "" });
@@ -146,13 +145,20 @@ const Home = () => {
     let cancelled = false;
     (async () => {
       try {
-        const [dests, posts, reviews, heroRows] = await Promise.all([
+        const [dests, posts, reviews, heroRows, galleryRows] = await Promise.all([
           fetchJson("/api/destinations"),
           fetchJson("/api/blog/posts"),
           fetchJson("/api/reviews?public=true"),
           fetchJson("/api/hero-slides?public=true").catch(() => []),
+          fetchJson("/api/gallery").catch(() => []),
         ]);
         if (cancelled) return;
+
+        const shots = (Array.isArray(galleryRows) ? galleryRows : [])
+          .filter((g) => (g.type || "image") === "image")
+          .map((g) => resolveMediaUrl(g.url))
+          .filter(Boolean);
+        setRwandaShots(shots);
         if (Array.isArray(heroRows) && heroRows.length > 0) {
           setHeroSlides(heroRows.map(mapHeroSlideFromApi));
         } else {
@@ -167,6 +173,7 @@ const Home = () => {
             .slice(0, 3);
           setBlogPosts(published.map((p, idx) => ({
             id: p.id,
+            slug: (p.slug || "").trim() || `cms-${p.id}`,
             title: p.title,
             date: p.updatedAt ? new Date(p.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "Recent",
             image: resolveMediaUrl(p.coverImageUrl) || [blogImgA, blogImgB, blogImgC][idx % 3],
@@ -174,13 +181,15 @@ const Home = () => {
         }
         if (Array.isArray(reviews) && reviews.length > 0) {
           const ok = reviews.slice(0, 6);
-          const shots = [testimonial1, testimonial2, testimonial3];
           setTestimonials(ok.map((r, i) => ({
             id: r.id,
             name: r.authorName || "Verified Traveler",
             role: r.authorCountry || `${r.rating || 5}-Star Review`,
             text: (r.comment || "").slice(0, 200),
-            image: resolveMediaUrl(r.photoUrl) || shots[i % shots.length],
+            image:
+              resolveMediaUrl(r.photoUrl) ||
+              shots[i % shots.length] ||
+              rwandaFallbackShot,
             rating: r.rating || 5,
           })));
         }
@@ -191,6 +200,12 @@ const Home = () => {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  const socialProofShots = useMemo(() => {
+    const picks = rwandaShots.slice(0, 3);
+    while (picks.length < 3) picks.push(rwandaFallbackShot);
+    return picks;
+  }, [rwandaShots]);
 
   const trendingMarqueeItems = useMemo(() => {
     const list = sliderDestinations.length ? sliderDestinations : GALLERY_DESTINATIONS;
@@ -358,8 +373,8 @@ const Home = () => {
               <NavLink to="/destinations" className="primaryBtn mt-4">Discover More</NavLink>
               <div className="social-proof mt-4">
                 <div className="avatar-stack">
-                  {[testimonial1, testimonial2, testimonial3].map((img, i) => (
-                    <img key={i} src={img} alt="Traveler" />
+                  {socialProofShots.map((img, i) => (
+                    <img key={i} src={img} alt="Rwanda tour highlight" />
                   ))}
                 </div>
                 <span>1,000+ happy travelers</span>
@@ -546,7 +561,7 @@ const Home = () => {
                   </div>
                   <div className="blog-body">
                     <h4>{post.title}</h4>
-                    <NavLink to="/blog" className="read-more">Read More <i className="bi bi-arrow-right"></i></NavLink>
+                    <NavLink to={`/blog/${encodeURIComponent(post.slug || `cms-${post.id}`)}`} className="read-more">Read More <i className="bi bi-arrow-right"></i></NavLink>
                   </div>
                 </div>
               </Col>
