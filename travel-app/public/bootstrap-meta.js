@@ -122,7 +122,7 @@
     var pageUrl = path === "/" ? siteUrl + "/" : siteUrl + path;
     var keepPageTags = isPrerendered();
     var logoUrl = resolveMediaUrl(settings.logoUrl || "");
-    var imageUrl = logoUrl || siteUrl + "/logo512.png";
+    var imageUrl = siteUrl + "/og-cover.jpg";
     var keywords = [
       brandName,
       "Rwanda tours",
@@ -140,6 +140,8 @@
       upsertMeta("property", "og:description", metaDescription);
       upsertMeta("name", "twitter:title", title);
       upsertMeta("name", "twitter:description", metaDescription);
+      upsertMeta("property", "og:image", imageUrl);
+      upsertMeta("name", "twitter:image", imageUrl);
     }
 
     upsertMeta("name", "keywords", keywords);
@@ -151,11 +153,9 @@
     upsertMeta("property", "og:type", "website");
     upsertMeta("property", "og:site_name", brandName);
     upsertMeta("property", "og:url", pageUrl);
-    upsertMeta("property", "og:image", imageUrl);
     upsertMeta("property", "og:locale", "en_RW");
 
     upsertMeta("name", "twitter:card", "summary_large_image");
-    upsertMeta("name", "twitter:image", imageUrl);
 
     if (logoUrl) {
       upsertLink("icon", logoUrl);

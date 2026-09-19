@@ -6,7 +6,7 @@ export const Route = createFileRoute('/_authenticated/users/staff')({
     <TourismUsersPage
       segment='staff'
       title='Staff / Admins'
-      description='Operational accounts with elevated permissions.'
+      description='People who run the staff desk.'
     />
   ),
 })

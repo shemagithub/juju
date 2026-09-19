@@ -204,7 +204,7 @@ export function TourismReviewsPage({ pendingOnly }: { pendingOnly?: boolean }) {
   return (
     <TourismAdminShell
       title={pendingOnly ? 'Reviews pending approval' : 'All reviews'}
-      description='Create testimonials for the public site, or approve customer submissions.'
+      description='Approve a review to show it on the website.'
       actions={
         <div className='flex gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
@@ -480,7 +480,7 @@ export function TourismReviewsPage({ pendingOnly }: { pendingOnly?: boolean }) {
           if (!o) setCreateForm(emptyReviewForm())
         }}
         title='Add review'
-        description='Approved reviews appear on the travel-app Home and About pages.'
+        description='Approved reviews show on Home and About.'
         onSubmit={saveCreate}
         saving={createSaving}
         saveLabel='Create review'

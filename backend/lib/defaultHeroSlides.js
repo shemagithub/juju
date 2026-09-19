@@ -8,7 +8,7 @@ export const DEFAULT_HERO_SLIDES = [
     image_url: '',
     card_title: 'VOLCANOES NP',
     card_subtitle: 'Rwanda — Gorillas',
-    link: '/destinations',
+    link: '/gorilla-trekking',
     sort_order: 10,
   },
   {
@@ -20,7 +20,7 @@ export const DEFAULT_HERO_SLIDES = [
     image_url: '',
     card_title: 'AKAGERA SAFARI',
     card_subtitle: 'Rwanda — Wildlife',
-    link: '/destinations',
+    link: '/akagera-safari',
     sort_order: 20,
   },
   {
@@ -32,7 +32,7 @@ export const DEFAULT_HERO_SLIDES = [
     image_url: '',
     card_title: 'NYUNGWE FOREST',
     card_subtitle: 'Rwanda — Canopy',
-    link: '/destinations',
+    link: '/nyungwe-forest',
     sort_order: 30,
   },
   {
@@ -44,7 +44,7 @@ export const DEFAULT_HERO_SLIDES = [
     image_url: '',
     card_title: 'LAKE KIVU',
     card_subtitle: 'Rwanda — Lakeside',
-    link: '/destinations',
+    link: '/lake-kivu',
     sort_order: 40,
   },
 ]

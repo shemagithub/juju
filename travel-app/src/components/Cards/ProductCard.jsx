@@ -10,7 +10,7 @@ const ProductCard = ({ val }) => {
         variant="top"
         src={val.image}
         className="img-fluid"
-        alt={"image"}
+        alt={val.title || val.name || "Rwanda tour"}
       />
       <Card.Body>
         <Card.Text>

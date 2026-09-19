@@ -29,7 +29,10 @@
       content="Book gorilla trekking, wildlife safaris, car rental, and custom Rwanda tours with RwandaQuest."
     />
     <meta property="og:url" content="https://rwandaquesttours.com/" />
-    <meta property="og:image" content="https://rwandaquesttours.com/logo512.png" />
+    <meta property="og:image" content="https://rwandaquesttours.com/og-cover.jpg" />
+    <meta property="og:image:alt" content="Rwanda safari landscape and mountain gorilla trekking" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_RW" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="RwandaQuest Tours — Gorilla Trekking &amp; Safari Rwanda" />
@@ -37,15 +40,38 @@
       name="twitter:description"
       content="Book gorilla trekking, wildlife safaris, car rental, and custom Rwanda tours with RwandaQuest."
     />
-    <meta name="twitter:image" content="https://rwandaquesttours.com/logo512.png" />
+    <meta name="twitter:image" content="https://rwandaquesttours.com/og-cover.jpg" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo512.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <script type="application/ld+json" id="site-json-ld">
+      {"@context":"https://schema.org","@graph":[{"@type":"TravelAgency","@id":"https://rwandaquesttours.com/#organization","name":"RwandaQuest","url":"https://rwandaquesttours.com","image":"https://rwandaquesttours.com/og-cover.jpg","telephone":"+250 799 608 178","address":{"@type":"PostalAddress","addressLocality":"Kigali","addressCountry":"RW"}},{"@type":"WebSite","@id":"https://rwandaquesttours.com/#website","url":"https://rwandaquesttours.com","name":"RwandaQuest"}]}
+    </script>
     <script src="%PUBLIC_URL%/runtime-config.js"></script>
     <script src="%PUBLIC_URL%/bootstrap-meta.js"></script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+      <article>
+        <h1>RwandaQuest Tours — Gorilla Trekking &amp; Safari Rwanda</h1>
+        <p>
+          <img src="%PUBLIC_URL%/og-cover.jpg" alt="Rwanda safari landscape and mountain gorilla trekking" width="1200" height="630" />
+        </p>
+        <p>
+          RwandaQuest is a licensed Kigali tour operator for gorilla trekking in Volcanoes National Park,
+          Big Five safaris in Akagera, chimpanzee tracking in Nyungwe Forest, Lake Kivu stays, and Rwanda car rental.
+        </p>
+        <nav>
+          <a href="/gorilla-trekking">Gorilla Trekking</a>
+          <a href="/akagera-safari">Akagera Safari</a>
+          <a href="/nyungwe-forest">Nyungwe Forest</a>
+          <a href="/car-rental">Car Rental</a>
+          <a href="/packages">Tour Packages</a>
+          <a href="/blog">Blog</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </article>
+    </noscript>
     <div id="root"></div>
   </body>
 </html>

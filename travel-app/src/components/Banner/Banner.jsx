@@ -10,7 +10,7 @@ const Banner = () => {
       <section className="slider">
         <Carousel variant="dark">
           <Carousel.Item>
-            <img src={sliderImg} className="d-block w-100" alt="First slide" />
+            <img src={sliderImg} className="d-block w-100" alt="Rwanda landscape on a gorilla trekking tour" />
             <Carousel.Caption>
               <div className="slider_des">
                 <h5 className="heading">
@@ -26,7 +26,7 @@ const Banner = () => {
           </Carousel.Item>
 
           <Carousel.Item>
-            <img src={sliderImg1} className="d-block w-100" alt="First slide" />
+            <img src={sliderImg1} className="d-block w-100" alt="Akagera safari plains in Rwanda" />
             <Carousel.Caption>
               <div className="slider_des">
                 <h5 className="heading">

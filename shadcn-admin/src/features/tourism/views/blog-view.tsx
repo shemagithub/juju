@@ -23,8 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
 import { ImageUploader } from '@/components/shared/image-uploader'
+import { RichTextEditor } from '@/components/shared/rich-text-editor'
 import { ResourceEditDialog } from '@/components/shared/resource-edit-dialog'
 import { ResourceRowActions } from '@/components/shared/resource-row-actions'
 import { ResourceViewDialog } from '@/components/shared/resource-view-dialog'
@@ -112,8 +112,8 @@ function BlogListPage() {
 
   return (
     <TourismAdminShell
-      title='Blog posts'
-      description='Articles for your marketing site. Rich text editor can replace the plain textarea later.'
+      title='Blog'
+      description='Write a story. Put photos between the paragraphs.'
       actions={
         <div className='flex gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
@@ -206,9 +206,14 @@ function BlogListPage() {
             ) : null}
             <div className='rounded-md border p-3'>
               <p className='text-muted-foreground text-xs'>Body</p>
-              <pre className='mt-2 max-h-[45vh] whitespace-pre-wrap text-sm leading-relaxed'>
-                {viewPost.body || '—'}
-              </pre>
+              {viewPost.body ? (
+                <div
+                  className='admin-html mt-2 max-h-[45vh] overflow-auto rounded-md border p-3 text-sm'
+                  dangerouslySetInnerHTML={{ __html: viewPost.body }}
+                />
+              ) : (
+                <p className='mt-2 text-sm'>—</p>
+              )}
             </div>
             <div className='text-muted-foreground text-xs'>
               <p>
@@ -227,11 +232,11 @@ function BlogListPage() {
         open={!!editDraft}
         onOpenChange={(o) => !o && setEditDraft(null)}
         title='Edit post'
-        description='Update fields and save. Slug stays as stored unless you change title in API later.'
+        description='Change the story, then Save. Put photos between paragraphs.'
         itemName={editDraft?.title}
         onSubmit={saveEdit}
         saving={editSaving}
-        size='2xl'
+        size='4xl'
       >
         {editDraft ? (
           <>
@@ -273,15 +278,10 @@ function BlogListPage() {
                   ))}
                 </select>
               </div>
-              <div className='space-y-2'>
-                <Label htmlFor='eb'>Body</Label>
-                <Textarea
-                  id='eb'
-                  value={editDraft.body}
-                  onChange={(e) => setEditDraft({ ...editDraft, body: e.target.value })}
-                  rows={8}
-                />
-              </div>
+              <RichTextEditor
+                value={editDraft.body}
+                onChange={(html) => setEditDraft({ ...editDraft, body: html })}
+              />
               <ImageUploader
                 label='Cover image'
                 value={editDraft.coverImageUrl}
@@ -364,7 +364,7 @@ function BlogNewPage() {
         </Button>
       }
     >
-      <Card className='max-w-2xl'>
+      <Card className='max-w-4xl'>
         <CardHeader>
           <CardTitle>New post</CardTitle>
         </CardHeader>
@@ -403,15 +403,7 @@ function BlogNewPage() {
                 ))}
               </select>
             </div>
-            <div className='space-y-2'>
-              <Label htmlFor='body'>Body</Label>
-              <Textarea
-                id='body'
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                rows={10}
-              />
-            </div>
+            <RichTextEditor value={body} onChange={setBody} />
             <ImageUploader
               label='Cover image'
               value={coverImageUrl}
@@ -591,7 +583,7 @@ function BlogCategoriesPage() {
                 required
               />
             </div>
-            <p className='text-muted-foreground text-xs'>Slug updates if you change name (via API).</p>
+            <p className='text-muted-foreground text-xs'>The website link updates when you change the name.</p>
           </>
         ) : null}
       </ResourceEditDialog>

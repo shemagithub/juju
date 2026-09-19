@@ -73,8 +73,8 @@ export function TourismHeroSlidesPage() {
 
   return (
     <TourismAdminShell
-      title='Home hero slides'
-      description='Manage the GLOBE EXPRESS shuffle hero on the public home page — region, title, description, card labels, image, and link.'
+      title='Homepage'
+      description='The big pictures and text at the top of the website.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>

@@ -86,7 +86,7 @@ export function UserAuthForm({
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Staff email</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <div className='relative'>
                   <Mail className='text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2' />
@@ -131,7 +131,7 @@ export function UserAuthForm({
           ) : (
             <LogIn className='size-4' />
           )}
-          Sign in to portal
+          Sign in
         </Button>
       </form>
     </Form>

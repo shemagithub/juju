@@ -338,7 +338,7 @@ export function TourismCarRentalRequestsPage({
   return (
     <TourismAdminShell
       title={title}
-      description='Quotes from the public car rental page. Filter server-side, update status and notes.'
+      description='People asking to rent a car. Open one to quote or confirm.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
@@ -408,7 +408,7 @@ export function TourismCarRentalRequestsPage({
         <CardHeader>
           <CardTitle>Inbox</CardTitle>
           <CardDescription>
-            Search and filters hit the database; pagination is applied to this page only.
+            Search a name, then open the request to quote or confirm.
           </CardDescription>
         </CardHeader>
         <CardContent className='space-y-4'>
@@ -760,7 +760,7 @@ export function TourismCarRentalRequestsPage({
         open={!!editR}
         onOpenChange={(o) => !o && setEditR(null)}
         title='Edit request'
-        description='Update pipeline status and internal notes. Customer details are read-only here.'
+        description='Change status and notes. Customer details stay as they sent them.'
         itemName={editR?.name}
         onSubmit={saveEdit}
         saving={editSaving}
@@ -821,7 +821,7 @@ export function TourismCarRentalRequestsPage({
         open={!!deleteR}
         onOpenChange={(o) => !o && setDeleteR(null)}
         title='Delete this request?'
-        desc={<span>This removes the lead from the database permanently.</span>}
+        desc={<span>This deletes the request. You cannot undo it.</span>}
         destructive
         isLoading={deleting}
         confirmText={deleting ? 'Deleting…' : 'Delete'}

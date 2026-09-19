@@ -1,0 +1,5 @@
+.DS_Store
+**/.DS_Store
+cpanel-zips/
+node_modules/
+*.log

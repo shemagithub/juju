@@ -88,8 +88,8 @@ function GalleryListPage() {
 
   return (
     <TourismAdminShell
-      title='Media gallery'
-      description='Image URLs (CDN or uploads). Video support depends on storage integration.'
+      title='Photos'
+      description='Pictures shown in the gallery on the website.'
       actions={
         <div className='flex gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
@@ -259,7 +259,7 @@ function GalleryUploadPage() {
   return (
     <TourismAdminShell
       title='Upload media'
-      description='Upload an image (drag & drop) or paste a public image URL.'
+      description='Drop a photo here, or paste a picture link.'
       actions={
         <Button variant='outline' size='sm' asChild>
           <Link to='/gallery'>Back</Link>

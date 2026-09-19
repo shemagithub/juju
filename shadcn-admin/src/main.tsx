@@ -9,6 +9,7 @@ import {
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { resolveApiBase } from '@/lib/api-base'
 import { handleServerError } from '@/lib/handle-server-error'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
@@ -85,10 +86,9 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// Render the app
 const apiBaseMeta = document.querySelector('meta[name="api-base"]')
-if (apiBaseMeta && import.meta.env.VITE_API_URL) {
-  apiBaseMeta.setAttribute('content', String(import.meta.env.VITE_API_URL))
+if (apiBaseMeta) {
+  apiBaseMeta.setAttribute('content', resolveApiBase())
 }
 
 const rootElement = document.getElementById('root')!

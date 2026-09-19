@@ -7,10 +7,11 @@ import {
   Modal,
   Accordion,
 } from "react-bootstrap";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./destinations.css";
 import { fetchJson, resolveMediaUrl } from "../../utils/backendApi";
 import { isDisplayableName } from "../../utils/contentValidation";
+import { landingPathForDestination } from "../../utils/destinationLandings";
 
 import heroFeatured from "../../assets/images/tour/bangkok.png";
 import fallbackImg from "../../assets/images/tour/bali-1.png";
@@ -57,6 +58,7 @@ function mapDestinationFromApi(d) {
   return {
     id: d.id,
     name,
+    slug: d.slug || "",
     category: d.category || inferDestinationCategory(name),
     image: firstImg || fallbackImg,
     location: d.location || "Rwanda",
@@ -74,6 +76,7 @@ function mapDestinationFromApi(d) {
 }
 
 const Destinations = () => {
+  const navigate = useNavigate();
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
@@ -161,6 +164,11 @@ const Destinations = () => {
     setCarouselPage((p) => Math.min(totalCarouselPages - 1, p + 1));
 
   const handleViewDetails = (destination) => {
+    const landing = landingPathForDestination(destination);
+    if (landing && landing !== "/destinations") {
+      navigate(landing);
+      return;
+    }
     setSelectedDestination(destination);
     setShowModal(true);
   };

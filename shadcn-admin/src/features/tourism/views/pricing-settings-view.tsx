@@ -226,7 +226,7 @@ export function TourismPricingSettingsPage() {
   return (
     <TourismAdminShell
       title='Adventure pricing'
-      description='Manage the “Prices For Rwanda Adventures” cards on the home page and /pricing.'
+      description='Price cards on Home and the pricing page.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
@@ -465,7 +465,7 @@ export function TourismPricingSettingsPage() {
           <Label htmlFor='plan-features'>Features (one per line)</Label>
           <Textarea
             id='plan-features'
-            className='min-h-[140px] font-mono text-sm'
+            className='min-h-[140px] text-sm leading-relaxed'
             value={planForm.featuresText}
             onChange={(e) => setPlanForm((f) => ({ ...f, featuresText: e.target.value }))}
             placeholder={'5 Days Tour\n7 Nights Stay\nAll Meals'}

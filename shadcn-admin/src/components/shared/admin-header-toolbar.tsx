@@ -1,4 +1,3 @@
-import { ConfigDrawer } from '@/components/config-drawer'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -7,9 +6,9 @@ type AdminHeaderToolbarProps = {
   searchPlaceholder?: string
 }
 
-/** Compact, responsive top bar used on dashboard and tourism pages. */
+/** Compact top bar: jump-to search, theme, account. */
 export function AdminHeaderToolbar({
-  searchPlaceholder = 'Search pages, bookings, settings…',
+  searchPlaceholder = 'Jump to bookings, packages, blog…',
 }: AdminHeaderToolbarProps) {
   return (
     <>
@@ -19,7 +18,6 @@ export function AdminHeaderToolbar({
       />
       <div className='flex shrink-0 items-center gap-1 sm:gap-2'>
         <ThemeSwitch />
-        <ConfigDrawer />
         <ProfileDropdown />
       </div>
     </>

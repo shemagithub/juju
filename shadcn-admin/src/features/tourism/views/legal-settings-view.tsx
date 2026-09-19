@@ -79,10 +79,7 @@ function LegalEditor({
       <CardHeader>
         <CardTitle>{label}</CardTitle>
         <CardDescription>
-          Published at{' '}
-          <code className='text-xs'>{previewPath}</code> on the travel-app. Use{' '}
-          <code className='text-xs'>## Heading</code> for section titles; separate paragraphs with a
-          blank line.
+          Shown on the website. Use ## for a heading. Put a blank line between paragraphs.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -121,7 +118,7 @@ function LegalEditor({
           <div className='space-y-2'>
             <Label>Content</Label>
             <Textarea
-              className='min-h-[360px] font-mono text-xs leading-relaxed'
+              className='min-h-[360px] text-sm leading-relaxed'
               value={form.content}
               onChange={(e) => onChange({ ...form, content: e.target.value })}
               required
@@ -178,7 +175,7 @@ export function TourismLegalSettingsPage() {
   return (
     <TourismAdminShell
       title='Legal pages'
-      description='Privacy Policy and Terms & Conditions shown on the public travel-app.'
+      description='Privacy and terms pages in the website footer.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>

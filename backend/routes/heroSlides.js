@@ -47,25 +47,32 @@ export async function ensureHeroSlidesTable(pool) {
   `)
 
   const [countRows] = await pool.query('SELECT COUNT(*) AS n FROM hero_slides')
-  if (Number(countRows[0]?.n) > 0) return
+  if (Number(countRows[0]?.n) === 0) {
+    for (const row of DEFAULT_HERO_SLIDES) {
+      await pool.query(
+        `INSERT INTO hero_slides (
+          id, slug, region, title, description, image_url, card_title, card_subtitle, link, active_flag, sort_order
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+        [
+          randomUUID(),
+          row.slug,
+          row.region,
+          row.title,
+          row.description,
+          row.image_url,
+          row.card_title,
+          row.card_subtitle,
+          row.link,
+          row.sort_order,
+        ],
+      )
+    }
+  }
 
   for (const row of DEFAULT_HERO_SLIDES) {
     await pool.query(
-      `INSERT INTO hero_slides (
-        id, slug, region, title, description, image_url, card_title, card_subtitle, link, active_flag, sort_order
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
-      [
-        randomUUID(),
-        row.slug,
-        row.region,
-        row.title,
-        row.description,
-        row.image_url,
-        row.card_title,
-        row.card_subtitle,
-        row.link,
-        row.sort_order,
-      ],
+      `UPDATE hero_slides SET link = ? WHERE slug = ? AND (link = '' OR link = '/destinations')`,
+      [row.link, row.slug],
     )
   }
 }

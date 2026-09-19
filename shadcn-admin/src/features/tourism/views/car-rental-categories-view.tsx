@@ -125,7 +125,7 @@ export function TourismCarRentalCategoriesPage() {
   return (
     <TourismAdminShell
       title='Fleet categories'
-      description='Manage vehicle categories shown on the public Car Rental filters and in the admin vehicle form.'
+      description='Groups used to filter cars on the rental page.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>

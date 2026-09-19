@@ -86,7 +86,7 @@ const Header = () => {
                     {showLogo ? (
                       <img
                         src={logoUrl}
-                        alt=""
+                        alt={brandName}
                         className="brand-logo-img brand-logo-img--drawer site-brand-logo-img brand-logo-transparent"
                         onError={() => setLogoFailed(true)}
                       />

@@ -1,9 +1,13 @@
 /**
  * Backend base URL:
- * - Development: omit REACT_APP_API_URL to use CRA proxy (`package.json` "proxy") → same-origin `/api`.
- * - Production: set REACT_APP_API_URL=https://your-api.example.com
+ * - `window.__API_BASE__` from public/runtime-config.js (always current)
+ * - else REACT_APP_API_URL
+ * - else same-origin (CRA proxy)
  */
 export function getApiBase() {
+  if (typeof window !== "undefined" && typeof window.__API_BASE__ === "string" && window.__API_BASE__) {
+    return String(window.__API_BASE__).replace(/\/$/, "");
+  }
   return String(process.env.REACT_APP_API_URL || "").replace(/\/$/, "");
 }
 

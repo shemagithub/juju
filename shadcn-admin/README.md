@@ -1,3 +1,9 @@
+# RwandaQuest admin
+
+Staff dashboard for RwandaQuest Tours (`admin.rwandaquesttours.com`). It talks to `https://backend.rwandaquesttours.com` unless you set `VITE_API_URL`. See the repo root [README](../README.md) for run and cPanel steps.
+
+---
+
 # Shadcn Admin Dashboard
 
 Admin Dashboard UI crafted with Shadcn and Vite. Built with responsiveness and accessibility in mind.

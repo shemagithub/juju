@@ -6,6 +6,7 @@ import { fetchJson, resolveMediaUrl } from "../../../utils/backendApi";
 import { isDisplayableName } from "../../../utils/contentValidation";
 import { useSiteSettings } from "../../../context/SiteSettingsContext";
 import { DEFAULT_SITE_SETTINGS } from "../../../config/defaultSiteSettings";
+import { landingPathForDestination, KEYWORD_TOURS } from "../../../utils/destinationLandings";
 import g1 from "../../../assets/images/gallery/g1.jpg";
 
 const Footer = () => {
@@ -36,7 +37,7 @@ const Footer = () => {
             dests
               .filter((d) => isDisplayableName(d?.name))
               .slice(0, 5)
-              .map((d) => ({ id: d.id, name: d.name })),
+              .map((d) => ({ id: d.id, name: d.name, slug: d.slug })),
           );
         }
         if (Array.isArray(gallery) && gallery.length) {
@@ -174,13 +175,15 @@ const Footer = () => {
                 {footerDestinations.length ? (
                   footerDestinations.map((d) => (
                     <li key={d.id}>
-                      <NavLink to="/destinations">{d.name}</NavLink>
+                      <NavLink to={landingPathForDestination(d)}>{d.name}</NavLink>
                     </li>
                   ))
                 ) : (
-                  <li>
-                    <NavLink to="/destinations">Explore destinations</NavLink>
-                  </li>
+                  KEYWORD_TOURS.slice(0, 5).map((t) => (
+                    <li key={t.path}>
+                      <NavLink to={t.path}>{t.label}</NavLink>
+                    </li>
+                  ))
                 )}
               </ul>
             </Col>
@@ -232,7 +235,7 @@ const Footer = () => {
             <div className="insta-grid">
               {instaImages.map((img, i) => (
                 <div key={i} className="insta-item">
-                  <img src={img} alt={`Gallery ${i + 1}`} />
+                  <img src={img} alt={`Rwanda tour ${i + 1}`} />
                 </div>
               ))}
             </div>

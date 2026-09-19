@@ -119,7 +119,7 @@ function DestinationListPage() {
   return (
     <TourismAdminShell
       title='Destinations'
-      description='Full destination detail for the travel-app modal: description, location, permits, highlights, activities, reviews & FAQs.'
+      description='Places you sell trips to. Open one to edit the travel guide.'
       actions={
         <div className='flex gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
@@ -237,7 +237,7 @@ function DestinationListPage() {
         open={!!editDest}
         onOpenChange={(o) => !o && (setEditDest(null), setEditId(null))}
         title='Edit destination'
-        description='All fields appear in the travel-app destination modal.'
+        description='This is what visitors read when they open this place.'
         itemName={editDest?.name}
         onSubmit={saveEdit}
         saving={editSaving}
@@ -293,7 +293,7 @@ function DestinationNewPage() {
   return (
     <TourismAdminShell
       title='Add destination'
-      description='Create a destination with full modal content for the public site.'
+      description='Add a place. Visitors will see it in the travel guide.'
       actions={
         <Button variant='outline' size='sm' asChild>
           <Link to='/destinations'>Back to list</Link>

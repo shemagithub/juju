@@ -135,8 +135,8 @@ function PackageListPage() {
 
   return (
     <TourismAdminShell
-      title='Tour packages'
-      description='Manage safari and tour products. Changes sync to your public site when wired.'
+      title='Packages'
+      description='Tours people can book. Add one, then it shows on the website.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
@@ -410,7 +410,7 @@ function PackageNewPage() {
   return (
     <TourismAdminShell
       title='Add package'
-      description='Create a new bookable tour. Add detailed itinerary from the package editor later if needed.'
+      description='Name the tour. You can add the day-by-day plan after it is saved.'
       actions={
         <Button variant='outline' size='sm' asChild>
           <Link to='/tour-packages'>Back to list</Link>
@@ -556,7 +556,7 @@ function PackageCategoriesPage() {
   return (
     <TourismAdminShell
       title='Package categories'
-      description='Group packages for browsing on the website.'
+      description='Groups for browsing tours on the website.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' asChild>
@@ -774,7 +774,7 @@ function PackageItinerariesPage() {
   return (
     <TourismAdminShell
       title='Itineraries'
-      description='Day-by-day plans attached to each package.'
+      description='Day-by-day plan for each tour.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>
           <RefreshCw className='me-1 size-4' />

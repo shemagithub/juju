@@ -45,7 +45,7 @@ export function TourismReportsPage({
   return (
     <TourismAdminShell
       title={title}
-      description='Aggregated from monthly metrics and live entities in the database.'
+      description='Numbers from bookings and the website.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>
           <RefreshCw className='me-1 size-4' />

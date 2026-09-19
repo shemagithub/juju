@@ -139,7 +139,7 @@ export function TourismHeroSlideFormPage({ slideId }: { slideId?: string }) {
   return (
     <TourismAdminShell
       title={isEdit ? 'Edit hero slide' : 'Add hero slide'}
-      description='Controls the left panel text, background image, shuffle card label, and Discover button link.'
+      description='Headline, photo, and button on a homepage slide.'
       actions={
         <Button variant='outline' size='sm' asChild>
           <Link to='/website/hero'>Back to hero slides</Link>

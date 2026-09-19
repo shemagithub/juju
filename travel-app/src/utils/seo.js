@@ -31,10 +31,10 @@ export function resolvePublicSiteUrl(settings = {}, originFallback = "") {
 export function getPageSeo(pathname) {
   const path = normalizePath(pathname);
   const exact = PAGE_SEO[path];
-  if (exact) return { path, title: exact.title, description: exact.description };
+  if (exact) return { path, ...exact };
 
   const prefix = PAGE_SEO_PREFIXES.find((p) => path.startsWith(p.match));
-  if (prefix) return { path, title: prefix.title, description: prefix.description };
+  if (prefix) return { path, ...prefix };
 
   return { path };
 }
@@ -84,7 +84,12 @@ export function buildSeoPayload(settings = {}, pageOverride = {}, originFallback
   const siteUrl = resolvePublicSiteUrl(settings, originFallback);
   const pageUrl = `${siteUrl}${path === "/" ? "" : path}`;
   const logoUrl = resolveMediaUrl(settings.logoUrl || "");
-  const imageUrl = logoUrl || `${siteUrl}/logo512.png`;
+  const pageImage = String(pageOverride.image || "").trim();
+  const imageUrl = pageImage
+    ? /^https?:\/\//i.test(pageImage)
+      ? pageImage
+      : `${siteUrl}${pageImage.startsWith("/") ? pageImage : `/${pageImage}`}`
+    : `${siteUrl}/og-cover.jpg`;
   const keywords = buildKeywords(settings, pageTitle);
 
   const sameAs = [settings.facebook, settings.instagram, settings.twitter, settings.youtube]
@@ -206,6 +211,7 @@ export function applySeoMeta(seo) {
   upsertMeta("property", "og:description", seo.description);
   upsertMeta("property", "og:url", seo.pageUrl);
   upsertMeta("property", "og:image", seo.imageUrl);
+  upsertMeta("property", "og:image:alt", seo.title);
   upsertMeta("property", "og:locale", "en_RW");
 
   upsertMeta("name", "twitter:card", "summary_large_image");

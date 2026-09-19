@@ -98,7 +98,7 @@ export function TourismCarRentalVehicleFormPage({
   return (
     <TourismAdminShell
       title={isEdit ? 'Edit vehicle' : 'Add vehicle'}
-      description='Complete fleet record for the public Car Rental page and quote requests.'
+      description='This car will show on the rental page so people can request it.'
       actions={
         <Button variant='outline' size='sm' asChild>
           <Link to='/car-rental/vehicles'>Back to fleet</Link>

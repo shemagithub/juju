@@ -116,7 +116,7 @@ export function TourismGuidesPage({
     return (
       <TourismAdminShell
         title='Assign guides'
-        description='Guide assignment is managed from each booking row (Bookings section).'
+        description='Open a booking to pick a guide.'
         actions={
           <Button variant='outline' size='sm' asChild>
             <Link to='/bookings'>Open bookings</Link>
@@ -137,7 +137,7 @@ export function TourismGuidesPage({
       title={
         variant === 'availability' ? 'Guide availability' : 'Tour guides'
       }
-      description='Profiles linked to user accounts. Edit languages, bio, and availability.'
+      description='Edit languages, bio, and when they are free.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>
           <RefreshCw className='me-1 size-4' />

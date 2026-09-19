@@ -1,0 +1,121 @@
+.tour-landing-hero {
+  position: relative;
+  background: url("../../assets/images/slider/1.jpg") center/cover no-repeat;
+  padding: 160px 0 90px;
+  color: var(--white);
+}
+
+.tour-landing-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(15, 79, 79, 0.92), rgba(26, 107, 107, 0.78));
+}
+
+.tour-landing-hero .container {
+  position: relative;
+  z-index: 1;
+}
+
+.tour-landing-kicker {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primaryClr);
+  margin-bottom: 12px;
+}
+
+.tour-landing-hero h1 {
+  font-family: var(--fontFamily);
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800;
+  max-width: 720px;
+  margin-bottom: 16px;
+}
+
+.tour-landing-hero p {
+  max-width: 640px;
+  font-size: 17px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 28px;
+}
+
+.tour-landing-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tour-landing-photo {
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+.tour-landing-body p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--textLight, #4b5563);
+  margin-bottom: 16px;
+}
+
+.tour-landing-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.tour-landing-wa {
+  color: var(--teal) !important;
+  border-color: var(--teal) !important;
+  background: transparent;
+}
+
+.tour-landing-card {
+  background: #f7fafa;
+  border: 1px solid #e6eeee;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.tour-landing-card h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 14px;
+  color: var(--tealDark, #0f4f4f);
+}
+
+.tour-landing-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tour-landing-card li {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #374151;
+}
+
+.tour-landing-card li i {
+  color: var(--teal);
+  margin-top: 2px;
+}
+
+.tour-landing-links a {
+  color: var(--teal);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.tour-landing-links a:hover {
+  text-decoration: underline;
+}

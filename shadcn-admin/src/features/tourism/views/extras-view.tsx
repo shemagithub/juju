@@ -31,7 +31,7 @@ export function TourismExtrasPage() {
   return (
     <TourismAdminShell
       title='Notifications'
-      description='Admin alerts (system, payments, inquiries).'
+      description='Alerts from bookings, payments, and messages.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>
           <RefreshCw className='me-1 size-4' />

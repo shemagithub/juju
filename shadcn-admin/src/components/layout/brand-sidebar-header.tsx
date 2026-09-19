@@ -41,8 +41,8 @@ export function BrandSidebarHeader() {
             </div>
             <div className='grid flex-1 text-start text-sm leading-tight'>
               <span className='truncate font-semibold'>{brandName}</span>
-              <span className='text-muted-foreground truncate text-xs'>
-                Admin panel
+              <span className='text-sidebar-foreground/70 truncate text-xs'>
+                Staff desk
               </span>
             </div>
           </Link>

@@ -5,8 +5,8 @@ export const Route = createFileRoute('/_authenticated/users/tour-guides')({
   component: () => (
     <TourismUsersPage
       segment='guide'
-      title='Tour guide accounts'
-      description='Guides linked to assignments and availability.'
+      title='Guides'
+      description='People who lead tours.'
     />
   ),
 })

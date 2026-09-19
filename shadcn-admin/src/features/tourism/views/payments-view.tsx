@@ -132,8 +132,8 @@ export function TourismPaymentsPage({
       title={title}
       description={
         variant === 'status'
-          ? 'Review paid vs unpaid. Integrate Flutterwave webhooks for live updates.'
-          : 'All payment records from bookings.'
+          ? 'Paid vs unpaid bookings.'
+          : 'Payments from bookings.'
       }
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>

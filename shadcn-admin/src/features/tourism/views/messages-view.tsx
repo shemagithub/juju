@@ -122,7 +122,7 @@ export function TourismMessagesPage({
   return (
     <TourismAdminShell
       title={title}
-      description='Messages from contact forms. View, edit notes, or remove threads.'
+      description='Questions from the contact form. Open one to reply.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>
           <RefreshCw className='me-1 size-4' />
@@ -134,7 +134,7 @@ export function TourismMessagesPage({
         <CardHeader>
           <CardTitle>Inbox</CardTitle>
           <CardDescription>
-            Read state syncs to the database. Name and email are from the original submission.
+            Open a message to reply. Name and email come from the form they sent.
           </CardDescription>
         </CardHeader>
         <CardContent className='min-w-0'>
@@ -226,7 +226,7 @@ export function TourismMessagesPage({
         open={!!editM}
         onOpenChange={(o) => !o && setEditM(null)}
         title='Edit message'
-        description='Subject and body can be adjusted for internal notes; sender fields are read-only here.'
+        description='Add notes here. Name and email stay as the customer sent them.'
         itemName={editM?.subject || editM?.name}
         onSubmit={saveEdit}
         saving={editSaving}

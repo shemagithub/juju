@@ -25,6 +25,7 @@ const CarRental = lazy(() => import("./pages/CarRental/CarRental"));
 const CarRentalDetail = lazy(() => import("./pages/CarRental/CarRentalDetail"));
 const PrivacyPolicy = lazy(() => import("./pages/Legal/PrivacyPolicy"));
 const TermsConditions = lazy(() => import("./pages/Legal/TermsConditions"));
+const TourLanding = lazy(() => import("./pages/Tours/TourLanding"));
 
 function PageLoader() {
   return (
@@ -54,6 +55,11 @@ function App() {
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogDetail />} />
+              <Route path="/gorilla-trekking" element={<TourLanding path="/gorilla-trekking" />} />
+              <Route path="/akagera-safari" element={<TourLanding path="/akagera-safari" />} />
+              <Route path="/nyungwe-forest" element={<TourLanding path="/nyungwe-forest" />} />
+              <Route path="/lake-kivu" element={<TourLanding path="/lake-kivu" />} />
+              <Route path="/kigali-tours" element={<TourLanding path="/kigali-tours" />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/book" element={<Book />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />

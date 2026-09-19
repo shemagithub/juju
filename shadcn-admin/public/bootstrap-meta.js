@@ -8,7 +8,11 @@
       return window.__API_BASE__.replace(/\/$/, '')
     }
     var meta = document.querySelector('meta[name="api-base"]')
-    return meta ? String(meta.getAttribute('content') || '').replace(/\/$/, '') : ''
+    var fromMeta = meta ? String(meta.getAttribute('content') || '').replace(/\/$/, '') : ''
+    if (fromMeta && fromMeta.indexOf('localhost:4000') === -1) {
+      return fromMeta
+    }
+    return 'https://backend.rwandaquesttours.com'
   }
 
   function apiUrl(path) {

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { RefreshCw, Search } from 'lucide-react'
 import { api } from '@/lib/api'
@@ -187,7 +188,7 @@ export function TourismBookingsPage({
   return (
     <TourismAdminShell
       title={title}
-      description='Customer bookings from the website — Book page, Packages, and Services. Shows who booked with contact details.'
+      description='People who booked from the website. Search a name, then confirm or reply.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>
           <RefreshCw className='me-1 size-4' />
@@ -195,6 +196,20 @@ export function TourismBookingsPage({
         </Button>
       }
     >
+      <div className='mb-4 flex flex-wrap gap-2'>
+        {(
+          [
+            { label: 'All', to: '/bookings', active: !statusFilter },
+            { label: 'Pending', to: '/bookings/pending', active: statusFilter === 'pending' },
+            { label: 'Confirmed', to: '/bookings/confirmed', active: statusFilter === 'confirmed' },
+            { label: 'Cancelled', to: '/bookings/cancelled', active: statusFilter === 'cancelled' },
+          ] as const
+        ).map((tab) => (
+          <Button key={tab.to} size='sm' variant={tab.active ? 'default' : 'outline'} asChild>
+            <Link to={tab.to}>{tab.label}</Link>
+          </Button>
+        ))}
+      </div>
       <div className='mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <Card>
           <CardHeader className='pb-2'>
@@ -226,8 +241,7 @@ export function TourismBookingsPage({
         <CardHeader>
           <CardTitle>Who booked</CardTitle>
           <CardDescription>
-            Search by name, email, phone, reference, or package. Assign guides from Live tracking
-            after you confirm a departure.
+            Search a guest, then open the row to confirm.
           </CardDescription>
         </CardHeader>
         <CardContent className='min-w-0 space-y-4'>

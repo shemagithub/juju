@@ -1,13 +1,13 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth-store'
+import { resolveApiBase } from '@/lib/api-base'
 
 /**
- * Base URL for the tourism API.
- * - Development: leave `VITE_API_URL` empty to use the Vite proxy (`/api` → backend).
- * - Production: set `VITE_API_URL` to your API origin (e.g. https://api.example.com).
+ * Tourism API. Defaults to https://backend.rwandaquesttours.com.
+ * Override with VITE_API_URL (e.g. http://localhost:4000 for a local backend).
  */
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? '',
+  baseURL: resolveApiBase(),
   headers: { 'Content-Type': 'application/json' },
   timeout: 30_000,
 })

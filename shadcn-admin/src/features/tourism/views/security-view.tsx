@@ -55,7 +55,7 @@ export function TourismSecurityPage({
     return (
       <TourismAdminShell
         title='Activity logs'
-        description='Audit trail of actions recorded in the system. Logs are read-only.'
+        description='Who did what, and when. You can look, not change.'
         actions={
           <Button variant='outline' size='sm' onClick={() => void lRefetch()}>
             <RefreshCw className='me-1 size-4' />
@@ -131,7 +131,7 @@ export function TourismSecurityPage({
   return (
     <TourismAdminShell
       title='Roles & permissions'
-      description='Role definitions are stored in the database. Bulk edits use the API; this view is read-only per role.'
+      description='What each role is allowed to do. You can look, not change.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void rRefetch()}>
           <RefreshCw className='me-1 size-4' />
@@ -143,7 +143,7 @@ export function TourismSecurityPage({
         <CardHeader>
           <CardTitle>Roles</CardTitle>
           <CardDescription>
-            Permissions are string tokens checked by your API gateway later.
+            Permissions for this role.
           </CardDescription>
         </CardHeader>
         <CardContent className='min-w-0'>

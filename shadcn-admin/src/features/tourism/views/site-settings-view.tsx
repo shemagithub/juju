@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { RefreshCw } from 'lucide-react'
+import { Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { applyAdminSiteMeta } from '@/lib/apply-site-meta'
 import { handleServerError } from '@/lib/handle-server-error'
@@ -20,6 +20,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { ImageUploader } from '@/components/shared/image-uploader'
 import { TourismAdminShell } from '../components/tourism-admin-shell'
 import { useSiteSettingsQuery } from '../hooks/use-tourism-queries'
+
+type NavLink = { to: string; label: string; end?: boolean }
 
 export function TourismSiteSettingsPage({
   section,
@@ -49,19 +51,19 @@ export function TourismSiteSettingsPage({
 
   const title =
     section === 'seo'
-      ? 'SEO settings'
+      ? 'Google listing'
       : section === 'social'
         ? 'Social links'
         : section === 'contact'
-          ? 'Contact & brand'
+          ? 'Phone & logo'
           : section === 'navigation'
-            ? 'Navigation'
-            : 'Website content'
+            ? 'Website menu'
+            : 'Homepage text'
 
   return (
     <TourismAdminShell
       title={title}
-      description='Stored as JSON in `site_settings`. Public site reads the same API.'
+      description='These details show on the public website.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>
           <RefreshCw className='me-1 size-4' />
@@ -74,8 +76,8 @@ export function TourismSiteSettingsPage({
       ) : section === 'content' ? (
         <Card className='max-w-xl'>
           <CardHeader>
-            <CardTitle>Homepage & general copy</CardTitle>
-            <CardDescription>Key/value fields merged into site payload.</CardDescription>
+            <CardTitle>Homepage text</CardTitle>
+            <CardDescription>The first words visitors see on the homepage.</CardDescription>
           </CardHeader>
           <CardContent>
             <ContentForm
@@ -91,10 +93,9 @@ export function TourismSiteSettingsPage({
       ) : section === 'contact' ? (
         <Card className='max-w-2xl'>
           <CardHeader>
-            <CardTitle>Contact & brand</CardTitle>
+            <CardTitle>Phone & logo</CardTitle>
             <CardDescription>
-              Logo, company description, and contact details shown on the public site header, footer,
-              and contact page.
+              Logo, phone, and address shown on the website.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -126,12 +127,12 @@ export function TourismSiteSettingsPage({
       ) : section === 'navigation' ? (
         <Card className='max-w-2xl'>
           <CardHeader>
-            <CardTitle>Header navigation</CardTitle>
-            <CardDescription>JSON array synced to travel-app header nav links.</CardDescription>
+            <CardTitle>Menu at the top</CardTitle>
+            <CardDescription>Names and pages in the website header.</CardDescription>
           </CardHeader>
           <CardContent>
             <NavigationForm
-              initial={JSON.stringify(settings.navLinks ?? [], null, 2)}
+              initial={Array.isArray(settings.navLinks) ? (settings.navLinks as NavLink[]) : []}
               onSave={(navLinks) => merge({ navLinks })}
               pending={pending}
             />
@@ -140,7 +141,8 @@ export function TourismSiteSettingsPage({
       ) : section === 'seo' ? (
         <Card className='max-w-xl'>
           <CardHeader>
-            <CardTitle>SEO</CardTitle>
+            <CardTitle>Google listing</CardTitle>
+            <CardDescription>Title and snippet shown in search results.</CardDescription>
           </CardHeader>
           <CardContent>
             <SeoForm
@@ -156,7 +158,8 @@ export function TourismSiteSettingsPage({
       ) : (
         <Card className='max-w-xl'>
           <CardHeader>
-            <CardTitle>Social</CardTitle>
+            <CardTitle>Social links</CardTitle>
+            <CardDescription>Shown in the website footer.</CardDescription>
           </CardHeader>
           <CardContent>
             <SocialForm
@@ -199,11 +202,11 @@ function ContentForm({
       }}
     >
       <div className='space-y-2'>
-        <Label>Hero title</Label>
+        <Label>Big headline</Label>
         <Input value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} />
       </div>
       <div className='space-y-2'>
-        <Label>Hero subtitle</Label>
+        <Label>Line under the headline</Label>
         <Textarea
           value={heroSubtitle}
           onChange={(e) => setHeroSubtitle(e.target.value)}
@@ -236,11 +239,11 @@ function SeoForm({
       }}
     >
       <div className='space-y-2'>
-        <Label>Meta title</Label>
+        <Label>Title on Google</Label>
         <Input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} />
       </div>
       <div className='space-y-2'>
-        <Label>Meta description</Label>
+        <Label>Short description on Google</Label>
         <Textarea
           value={metaDescription}
           onChange={(e) => setMetaDescription(e.target.value)}
@@ -285,9 +288,9 @@ function ContactForm({
       }}
     >
       <div className='space-y-4'>
-        <h3 className='text-sm font-medium'>Brand identity</h3>
+        <h3 className='text-sm font-medium'>Company</h3>
         <div className='space-y-2'>
-          <Label>Brand name</Label>
+          <Label>Company name</Label>
           <Input className='w-full' value={form.brandName} onChange={set('brandName')} />
         </div>
         <ImageUploader
@@ -301,7 +304,7 @@ function ContactForm({
             className='min-h-[120px]'
             value={form.companyDescription}
             onChange={set('companyDescription')}
-            placeholder='Short description of your company for the footer, contact page, and about sections.'
+            placeholder='A short line about the company for the footer and contact page.'
           />
         </div>
       </div>
@@ -330,18 +333,18 @@ function ContactForm({
       <Separator />
 
       <div className='space-y-4'>
-        <h3 className='text-sm font-medium'>Site preview</h3>
+        <h3 className='text-sm font-medium'>Website address</h3>
         <div className='space-y-2'>
-          <Label>Public site URL</Label>
+          <Label>Live website URL</Label>
           <Input className='w-full' value={form.publicSiteUrl} onChange={set('publicSiteUrl')} />
           <p className='text-muted-foreground text-xs'>
-            Used for preview links in admin. Example: http://localhost:3000
+            Used for Preview. Example: https://rwandaquesttours.com
           </p>
         </div>
       </div>
 
       <Button type='submit' disabled={pending}>
-        {pending ? 'Saving…' : 'Save contact & brand'}
+        {pending ? 'Saving…' : 'Save'}
       </Button>
     </form>
   )
@@ -352,39 +355,89 @@ function NavigationForm({
   onSave,
   pending,
 }: {
-  initial: string
-  onSave: (navLinks: unknown[]) => void
+  initial: NavLink[]
+  onSave: (navLinks: NavLink[]) => void
   pending: boolean
 }) {
-  const [raw, setRaw] = useState(initial)
-  const [error, setError] = useState('')
+  const [links, setLinks] = useState<NavLink[]>(
+    initial.length
+      ? initial.map((link) => ({
+          to: String(link.to ?? ''),
+          label: String(link.label ?? ''),
+          end: Boolean(link.end),
+        }))
+      : [{ to: '/', label: 'Home', end: true }],
+  )
+
+  const update = (index: number, patch: Partial<NavLink>) => {
+    setLinks((current) =>
+      current.map((link, i) => (i === index ? { ...link, ...patch } : link)),
+    )
+  }
+
   return (
     <form
       className='space-y-4'
       onSubmit={(e) => {
         e.preventDefault()
-        try {
-          const parsed = JSON.parse(raw)
-          if (!Array.isArray(parsed)) throw new Error('Must be a JSON array')
-          setError('')
-          onSave(parsed)
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Invalid JSON')
-        }
+        onSave(
+          links
+            .map((link) => ({
+              to: link.to.trim(),
+              label: link.label.trim(),
+              ...(link.end ? { end: true } : {}),
+            }))
+            .filter((link) => link.to && link.label),
+        )
       }}
     >
-      <Textarea
-        className='min-h-[240px] font-mono text-xs'
-        value={raw}
-        onChange={(e) => setRaw(e.target.value)}
-      />
-      {error ? <p className='text-destructive text-sm'>{error}</p> : null}
-      <p className='text-muted-foreground text-xs'>
-        Example: [{'{'}&quot;to&quot;:&quot;/&quot;,&quot;label&quot;:&quot;Home&quot;,&quot;end&quot;:true{'}'}]
-      </p>
-      <Button type='submit' disabled={pending}>
-        {pending ? 'Saving…' : 'Save navigation'}
-      </Button>
+      <div className='space-y-3'>
+        {links.map((link, index) => (
+          <div key={index} className='grid gap-2 sm:grid-cols-[1fr_1fr_auto]'>
+            <div className='space-y-1'>
+              <Label>Name</Label>
+              <Input
+                value={link.label}
+                onChange={(e) => update(index, { label: e.target.value })}
+                placeholder='Packages'
+              />
+            </div>
+            <div className='space-y-1'>
+              <Label>Page</Label>
+              <Input
+                value={link.to}
+                onChange={(e) => update(index, { to: e.target.value })}
+                placeholder='/packages'
+              />
+            </div>
+            <div className='flex items-end'>
+              <Button
+                type='button'
+                variant='outline'
+                size='icon'
+                aria-label='Remove menu item'
+                onClick={() => setLinks((current) => current.filter((_, i) => i !== index))}
+                disabled={links.length <= 1}
+              >
+                <Trash2 className='size-4' />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className='flex flex-wrap gap-2'>
+        <Button
+          type='button'
+          variant='outline'
+          onClick={() => setLinks((current) => [...current, { to: '', label: '' }])}
+        >
+          <Plus className='me-1 size-4' />
+          Add page
+        </Button>
+        <Button type='submit' disabled={pending}>
+          {pending ? 'Saving…' : 'Save menu'}
+        </Button>
+      </div>
     </form>
   )
 }

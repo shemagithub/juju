@@ -6,7 +6,7 @@ export const Route = createFileRoute('/_authenticated/users/customers')({
     <TourismUsersSegmentPage
       segment='customer'
       title='Customers'
-      description='End users who book tours and interact with your site.'
+      description='People who booked or signed up.'
     />
   ),
 })

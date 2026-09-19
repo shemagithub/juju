@@ -1,17 +1,9 @@
 /**
  * Post-build SEO step.
  *
- * The app is a client-side SPA, so the HTML crawlers download is an empty
- * shell — every route returns the same homepage meta until JavaScript runs.
- * Google renders JS eventually, but on a delayed queue, which is why stale
- * titles, descriptions and contact details can linger in search results for
- * weeks after a change.
- *
- * This writes a real HTML file per route with that route's title,
- * description, Open Graph tags and canonical URL already in the markup, plus
- * a sitemap carrying <lastmod> dates so Google knows pages changed.
- *
- * Route copy is shared with the running app via src/config/pageSeo.json.
+ * Writes crawlable HTML (headings, copy, images, internal links) into each
+ * route file so search engines see real content without running JavaScript.
+ * Also sets Open Graph images, JSON-LD, and sitemap.xml.
  */
 const fs = require('fs')
 const path = require('path')
@@ -53,6 +45,17 @@ const SITE_URL = String(
 ).replace(/\/$/, '')
 const BRAND_NAME = String(env.REACT_APP_BRAND_NAME || 'RwandaQuest')
 
+const DEFAULT_LINKS = [
+  ['/', 'Home'],
+  ['/gorilla-trekking', 'Gorilla Trekking'],
+  ['/akagera-safari', 'Akagera Safari'],
+  ['/nyungwe-forest', 'Nyungwe Forest'],
+  ['/car-rental', 'Car Rental'],
+  ['/packages', 'Tour Packages'],
+  ['/blog', 'Blog'],
+  ['/contact', 'Contact'],
+]
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -75,35 +78,151 @@ function replaceTitle(html, title) {
 function upsertMeta(html, attr, key, value) {
   const tag = `<meta ${attr}="${key}" content="${escapeHtml(value)}"/>`
   const re = new RegExp(`<meta[^>]*${attr}=["']${escapeRegex(key)}["'][^>]*>`, 'i')
-  return re.test(html) ? html.replace(re, tag) : html.replace('</head>', `${tag}</head>`)
+  return re.test(html) ? html.replace(re, tag) : html.replace('</head>', `    ${tag}\n  </head>`)
 }
 
 function upsertCanonical(html, href) {
   const tag = `<link rel="canonical" href="${escapeHtml(href)}"/>`
   const re = /<link[^>]*rel=["']canonical["'][^>]*>/i
-  return re.test(html) ? html.replace(re, tag) : html.replace('</head>', `${tag}</head>`)
+  return re.test(html) ? html.replace(re, tag) : html.replace('</head>', `    ${tag}\n  </head>`)
+}
+
+function upsertJsonLd(html, data) {
+  const tag = `<script type="application/ld+json" id="site-json-ld">${JSON.stringify(data)}</script>`
+  if (/id="site-json-ld"/.test(html)) {
+    return html.replace(/<script[^>]*id="site-json-ld"[^>]*>[\s\S]*?<\/script>/i, tag)
+  }
+  return html.replace('</head>', `    ${tag}\n  </head>`)
+}
+
+function absoluteUrl(src) {
+  if (!src) return `${SITE_URL}/og-cover.jpg`
+  if (/^https?:\/\//i.test(src)) return src
+  return `${SITE_URL}${src.startsWith('/') ? src : `/${src}`}`
+}
+
+function buildCrawlerInner(route, page, title) {
+  const heading = page.heading || title || BRAND_NAME
+  const paragraphs = Array.isArray(page.paragraphs) && page.paragraphs.length
+    ? page.paragraphs
+    : page.description
+      ? [page.description]
+      : []
+  const image = absoluteUrl(page.image || '/og-cover.jpg')
+  const imageAlt = page.imageAlt || heading
+  const highlights = Array.isArray(page.highlights) ? page.highlights : []
+  const nav = DEFAULT_LINKS.map(
+    ([href, label]) => `<a href="${escapeHtml(href)}">${escapeHtml(label)}</a>`,
+  ).join(' · ')
+
+  return [
+    '<article class="seo-crawler">',
+    `<nav>${nav}</nav>`,
+    `<h1>${escapeHtml(heading)}</h1>`,
+    `<p><img src="${escapeHtml(image)}" alt="${escapeHtml(imageAlt)}" width="1200" height="630"/></p>`,
+    ...paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`),
+    highlights.length
+      ? `<ul>${highlights.map((h) => `<li>${escapeHtml(h)}</li>`).join('')}</ul>`
+      : '',
+    `<p><a href="/book">Book a tour</a> · <a href="/contact">Contact us</a></p>`,
+    '</article>',
+  ].join('')
+}
+
+function buildJsonLd(route, page, title, description, pageUrl, imageUrl) {
+  const graph = [
+    {
+      '@type': 'TravelAgency',
+      '@id': `${SITE_URL}/#organization`,
+      name: BRAND_NAME,
+      url: SITE_URL,
+      image: imageUrl,
+      telephone: '+250 799 608 178',
+      email: 'info@rwandaquesttours.com',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Kigali',
+        addressCountry: 'RW',
+      },
+      areaServed: { '@type': 'Country', name: 'Rwanda' },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: BRAND_NAME,
+      publisher: { '@id': `${SITE_URL}/#organization` },
+    },
+    {
+      '@type': 'WebPage',
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: title,
+      description,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      primaryImageOfPage: imageUrl,
+    },
+  ]
+  if (page.schemaType === 'TouristAttraction') {
+    graph.push({
+      '@type': 'TouristAttraction',
+      name: page.heading || title,
+      description,
+      image: imageUrl,
+      url: pageUrl,
+      touristType: 'International visitors',
+      isAccessibleForFree: false,
+    })
+  }
+  return { '@context': 'https://schema.org', '@graph': graph }
+}
+
+function injectRootAndNoscript(html, inner) {
+  let out = html
+  if (/<div id="root"><\/div>/i.test(out)) {
+    out = out.replace(/<div id="root"><\/div>/i, `<div id="root">${inner}</div>`)
+  } else {
+    out = out.replace(/<div id="root">[\s\S]*?<\/div>/i, `<div id="root">${inner}</div>`)
+  }
+  if (/<noscript>[\s\S]*?<\/noscript>/i.test(out)) {
+    out = out.replace(/<noscript>[\s\S]*?<\/noscript>/i, `<noscript>${inner}</noscript>`)
+  } else {
+    out = out.replace('<div id="root">', `<noscript>${inner}</noscript>\n    <div id="root">`)
+  }
+  return out
 }
 
 function buildPageHtml(shell, route, page) {
-  const title = page.title ? `${page.title} | ${BRAND_NAME}` : null
+  const pageTitle = page.title ? `${page.title} | ${BRAND_NAME}` : `${BRAND_NAME} Tours — Gorilla Trekking & Safari Rwanda`
+  const description =
+    page.description ||
+    'Book gorilla trekking, wildlife safaris, car rental, and custom Rwanda tours with RwandaQuest.'
   const pageUrl = route === '/' ? `${SITE_URL}/` : `${SITE_URL}${route}`
+  const imageUrl = absoluteUrl(page.image || '/og-cover.jpg')
+  const titleForHead = route === '/' && !page.title
+    ? 'RwandaQuest Tours — Gorilla Trekking &amp; Safari Rwanda'.replace(/&amp;/g, '&')
+    : pageTitle
 
   let html = shell
-  if (title) {
-    html = replaceTitle(html, title)
-    html = upsertMeta(html, 'property', 'og:title', title)
-    html = upsertMeta(html, 'name', 'twitter:title', title)
-  }
-  if (page.description) {
-    html = upsertMeta(html, 'name', 'description', page.description)
-    html = upsertMeta(html, 'property', 'og:description', page.description)
-    html = upsertMeta(html, 'name', 'twitter:description', page.description)
-  }
+  html = replaceTitle(html, titleForHead)
+  html = upsertMeta(html, 'name', 'description', description)
+  html = upsertMeta(html, 'property', 'og:title', titleForHead)
+  html = upsertMeta(html, 'name', 'twitter:title', titleForHead)
+  html = upsertMeta(html, 'property', 'og:description', description)
+  html = upsertMeta(html, 'name', 'twitter:description', description)
   html = upsertCanonical(html, pageUrl)
   html = upsertMeta(html, 'property', 'og:url', pageUrl)
-  // Tells bootstrap-meta.js this page already has route-specific tags, so it
-  // does not overwrite them with site-wide values from the settings API.
+  html = upsertMeta(html, 'property', 'og:image', imageUrl)
+  html = upsertMeta(html, 'name', 'twitter:image', imageUrl)
+  html = upsertMeta(html, 'property', 'og:image:alt', page.imageAlt || titleForHead)
+  html = upsertMeta(html, 'property', 'og:image:width', '1200')
+  html = upsertMeta(html, 'property', 'og:image:height', '630')
   html = upsertMeta(html, 'name', 'seo-prerendered', route)
+  html = upsertJsonLd(
+    html,
+    buildJsonLd(route, page, titleForHead, description, pageUrl, imageUrl),
+  )
+  html = injectRootAndNoscript(html, buildCrawlerInner(route, page, titleForHead))
   return html
 }
 
@@ -148,16 +267,20 @@ function main() {
 
   let written = 0
   for (const [route, page] of routes) {
-    if (route === '/') continue
-    const outDir = path.join(buildDir, route.replace(/^\//, ''))
-    fs.mkdirSync(outDir, { recursive: true })
-    fs.writeFileSync(path.join(outDir, 'index.html'), buildPageHtml(shell, route, page), 'utf8')
+    const html = buildPageHtml(shell, route, page)
+    if (route === '/') {
+      fs.writeFileSync(indexPath, html, 'utf8')
+    } else {
+      const outDir = path.join(buildDir, route.replace(/^\//, ''))
+      fs.mkdirSync(outDir, { recursive: true })
+      fs.writeFileSync(path.join(outDir, 'index.html'), html, 'utf8')
+    }
     written += 1
   }
 
   const lastmod = writeSitemap(routes)
   console.log(
-    `[seo] prerendered ${written} route HTML files and wrote sitemap.xml (lastmod ${lastmod}) for ${SITE_URL}`,
+    `[seo] prerendered ${written} crawlable HTML pages and sitemap.xml (lastmod ${lastmod}) for ${SITE_URL}`,
   )
 }
 

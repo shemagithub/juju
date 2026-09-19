@@ -1,38 +1,26 @@
 import { Link } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { useBootstrapQuery } from '@/hooks/use-bootstrap-query'
-
-function formatRwf(n: number) {
-  return new Intl.NumberFormat(undefined, {
-    maximumFractionDigits: 0,
-  }).format(n)
-}
 
 type StatCardProps = {
   title: string
   value: string
   hint: string
   to: string
+  urgent?: boolean
 }
 
-function StatCard({ title, value, hint, to }: StatCardProps) {
+function StatCard({ title, value, hint, to, urgent }: StatCardProps) {
   return (
-    <Link to={to} className='block'>
-      <Card className='hover:bg-muted/40 h-full transition-colors'>
-        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-          <CardTitle className='text-sm font-medium'>{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className='text-2xl font-bold'>{value}</div>
-          <p className='text-muted-foreground text-xs'>{hint}</p>
-        </CardContent>
-      </Card>
+    <Link
+      to={to}
+      className='bg-card hover:border-primary/40 block rounded-xl border p-4 shadow-sm transition-colors'
+    >
+      <p className='text-muted-foreground text-sm font-medium'>{title}</p>
+      <p className={`mt-1 text-3xl font-bold tabular-nums ${urgent && Number(value) > 0 ? 'text-primary' : ''}`}>
+        {value}
+      </p>
+      <p className='text-muted-foreground mt-1 text-xs'>{hint}</p>
     </Link>
   )
 }
@@ -42,17 +30,9 @@ export function TourismStats() {
 
   if (isPending) {
     return (
-      <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6'>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader className='pb-2'>
-              <Skeleton className='h-4 w-24' />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className='mb-2 h-8 w-32' />
-              <Skeleton className='h-3 w-40' />
-            </CardContent>
-          </Card>
+      <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className='h-28 rounded-xl' />
         ))}
       </div>
     )
@@ -60,66 +40,64 @@ export function TourismStats() {
 
   if (isError || !data) {
     return (
-      <div className='text-muted-foreground rounded-lg border border-dashed p-4 text-sm'>
-        Could not load live stats. Start the API on port 4000 and refresh.
+      <div className='text-muted-foreground rounded-xl border border-dashed p-4 text-sm'>
+        Could not load numbers. Check the connection and refresh.
       </div>
     )
   }
 
   const s = data.dashboardSummary
-  const revenue = s?.revenueRwf ?? data.monthlyMetrics.reduce((sum, m) => sum + m.revenueRwf, 0)
-  const bookings = s?.bookingsTotal ?? data.tourBookingRequests?.length ?? data.bookings.length
   const tourPending = s?.pendingTourRequests ?? 0
-  const pendingBookings =
-    (s?.bookingsByStatus?.pending ?? 0) || tourPending
-  const unreadMessages = s?.unreadMessages ?? (data.messages ?? []).filter(
-    (m) => typeof m === 'object' && m !== null && 'read' in m && !(m as { read: boolean }).read,
-  ).length
-  const destinations = s?.destinationsTotal ?? data.destinations.length
-  const pendingReviews = s?.pendingReviews ?? (data.reviews ?? []).filter(
+  const pendingBookings = (s?.bookingsByStatus?.pending ?? 0) || tourPending
+  const unreadMessages =
+    s?.unreadMessages ??
+    (data.messages ?? []).filter(
+      (m) => typeof m === 'object' && m !== null && 'read' in m && !(m as { read: boolean }).read,
+    ).length
+  const pendingCarRental = (data.carRentalRequests ?? []).filter(
     (r) =>
       typeof r === 'object' &&
       r !== null &&
       'status' in r &&
       (r as { status: string }).status === 'pending',
   ).length
+  const pendingReviews =
+    s?.pendingReviews ??
+    (data.reviews ?? []).filter(
+      (r) =>
+        typeof r === 'object' &&
+        r !== null &&
+        'status' in r &&
+        (r as { status: string }).status === 'pending',
+    ).length
 
   return (
-    <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6'>
+    <div className='grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
       <StatCard
-        title='Revenue (Rwf)'
-        value={formatRwf(revenue)}
-        hint={
-          s?.paymentsRevenue
-            ? 'From completed payments'
-            : s?.bookingsRevenue
-              ? 'From booking totals'
-              : 'Tap for revenue reports'
-        }
-        to='/reports/revenue'
+        title='Bookings waiting'
+        value={String(pendingBookings)}
+        hint='Tap to confirm or reply'
+        to='/bookings/pending'
+        urgent
       />
       <StatCard
-        title='Bookings'
-        value={String(bookings)}
-        hint={`${pendingBookings} pending · ${s?.unreadTourRequests ?? 0} unread`}
-        to='/bookings'
-      />
-      <StatCard
-        title='Messages'
+        title='New messages'
         value={String(unreadMessages)}
-        hint={`${s?.messagesTotal ?? data.messages.length} total inquiries`}
+        hint='Contact form inbox'
         to='/messages/contact'
+        urgent
       />
       <StatCard
-        title='Destinations'
-        value={String(destinations)}
-        hint={`${s?.packagesTotal ?? data.packages.length} packages linked`}
-        to='/destinations'
+        title='Car quotes'
+        value={String(pendingCarRental)}
+        hint='Rental requests to price'
+        to='/car-rental/pending'
+        urgent
       />
       <StatCard
-        title='Reviews'
+        title='Reviews to check'
         value={String(pendingReviews)}
-        hint={`${s?.approvedReviews ?? 0} approved on site`}
+        hint='Approve to show on the site'
         to='/reviews/pending'
       />
     </div>

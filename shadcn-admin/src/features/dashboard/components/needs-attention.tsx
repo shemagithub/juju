@@ -7,14 +7,6 @@ import {
   Star,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { useBootstrapQuery } from '@/hooks/use-bootstrap-query'
 
 type AttentionItem = {
@@ -30,14 +22,10 @@ export function NeedsAttention() {
 
   if (isPending) {
     return (
-      <Card>
-        <CardHeader className='pb-2'>
-          <CardTitle className='text-base'>Needs your attention</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className='text-muted-foreground text-sm'>Loading inbox…</p>
-        </CardContent>
-      </Card>
+      <section className='bg-card rounded-xl border p-4 shadow-sm sm:p-5'>
+        <h2 className='text-base font-semibold'>Needs a reply</h2>
+        <p className='text-muted-foreground mt-2 text-sm'>Loading inbox…</p>
+      </section>
     )
   }
 
@@ -87,73 +75,73 @@ export function NeedsAttention() {
     {
       label: 'Pending bookings',
       count: Math.max(pendingBookings, pendingTourRequests),
-      hint: 'Website bookings awaiting confirmation',
+      hint: 'Confirm or reply',
       to: '/bookings/pending',
       icon: CalendarDays,
     },
     {
       label: 'Unread messages',
       count: unreadMessages,
-      hint: 'Contact form & inquiries',
+      hint: 'Contact form',
       to: '/messages/contact',
       icon: MessageSquare,
     },
     {
       label: 'Car rental quotes',
       count: pendingCarRental,
-      hint: 'New quote requests',
+      hint: 'Price and reply',
       to: '/car-rental/pending',
       icon: Car,
     },
     {
       label: 'Reviews to approve',
       count: pendingReviews,
-      hint: 'Publish testimonials on the site',
+      hint: 'Show on the website',
       to: '/reviews/pending',
       icon: Star,
     },
-  ].filter((item) => item.count > 0)
+  ]
+
+  const waiting = items.filter((item) => item.count > 0)
 
   return (
-    <Card>
-      <CardHeader className='pb-2'>
-        <CardTitle className='text-base'>Needs your attention</CardTitle>
-        <CardDescription>
-          Open items that usually need a response first.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {items.length === 0 ? (
-          <p className='text-muted-foreground text-sm'>
-            All caught up — no pending bookings, messages, quotes, or reviews.
-          </p>
-        ) : (
-          <ul className='space-y-3'>
-            {items.map((item) => (
-              <li
-                key={item.to}
-                className='flex items-center justify-between gap-3 rounded-lg border p-3'
+    <section className='bg-card rounded-xl border p-4 shadow-sm sm:p-5'>
+      <div className='mb-3'>
+        <h2 className='text-base font-semibold'>Needs a reply</h2>
+        <p className='text-muted-foreground text-sm'>
+          Open these first — customers are waiting.
+        </p>
+      </div>
+      {waiting.length === 0 ? (
+        <p className='text-muted-foreground text-sm'>
+          Inbox is clear. Use the shortcuts below to update the website.
+        </p>
+      ) : (
+        <ul className='grid gap-3 sm:grid-cols-2'>
+          {waiting.map((item) => (
+            <li key={item.to}>
+              <Link
+                to={item.to}
+                className='hover:border-primary/40 flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors'
               >
                 <div className='flex min-w-0 items-start gap-3'>
-                  <div className='bg-muted flex size-9 shrink-0 items-center justify-center rounded-md'>
-                    <item.icon className='text-muted-foreground size-4' />
+                  <div className='bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-md'>
+                    <item.icon className='size-4' />
                   </div>
                   <div className='min-w-0'>
                     <div className='flex flex-wrap items-center gap-2'>
                       <span className='font-medium'>{item.label}</span>
-                      <Badge variant='secondary'>{item.count}</Badge>
+                      <Badge>{item.count}</Badge>
                     </div>
                     <p className='text-muted-foreground text-xs'>{item.hint}</p>
                   </div>
                 </div>
-                <Button size='sm' variant='outline' asChild>
-                  <Link to={item.to}>Open</Link>
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+                <span className='text-primary text-sm font-semibold'>Open</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }

@@ -161,7 +161,7 @@ export function TourismTeamSettingsPage() {
   return (
     <TourismAdminShell
       title='Team members'
-      description='Manage the Meet Our Team section on the public About page — name, job title, bio, and optional photo.'
+      description='People shown on the About page. Add a name, job title, and photo.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
@@ -265,7 +265,7 @@ export function TourismTeamSettingsPage() {
           }
         }}
         title={editing ? 'Edit team member' : 'Add team member'}
-        description='Name, title, and bio appear on the About page team cards.'
+        description='Name, job title, and photo on the About page.'
         itemName={editing?.name}
         onSubmit={(e) => void saveMember(e)}
         saving={pending}

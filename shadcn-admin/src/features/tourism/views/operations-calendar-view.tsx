@@ -170,7 +170,7 @@ export function OperationsCalendarView() {
   return (
     <TourismAdminShell
       title='Operations calendar'
-      description='See tour start dates at a glance. Data loads from your bookings API.'
+      description='Tour start dates from your bookings.'
       actions={
         <Button variant='outline' size='sm' onClick={() => void refetch()}>
           <RefreshCw className='me-1 size-4' />

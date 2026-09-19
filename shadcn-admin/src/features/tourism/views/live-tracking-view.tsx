@@ -256,7 +256,7 @@ export function LiveTrackingView() {
   return (
     <TourismAdminShell
       title='Live tracking'
-      description='Map destinations from your database. Pair with driver GPS or a mobile app later; today’s departures update from bookings.'
+      description='Destinations on the map, plus today’s departures from bookings.'
       actions={
         <div className='flex flex-wrap items-center gap-3'>
           <div className='flex items-center gap-2'>

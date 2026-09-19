@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
-/** MVP sidebar — focused on day-to-day tourism operations and website control. */
+/** One-click nav — no nested menus. Sub-pages live as buttons on each screen. */
 export const sidebarData: SidebarData = {
   user: {
     name: 'Admin',
@@ -23,115 +23,37 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: 'Tourism Admin',
+      name: 'RwandaQuest',
       logo: Mountain,
-      plan: 'Operations',
+      plan: 'Staff desk',
     },
   ],
   navGroups: [
     {
-      title: 'Home',
+      title: 'Work',
       items: [
-        {
-          title: 'Dashboard',
-          url: '/',
-          icon: LayoutDashboard,
-        },
+        { title: 'Home', url: '/', icon: LayoutDashboard },
+        { title: 'Bookings', url: '/bookings', icon: CalendarDays },
+        { title: 'Messages', url: '/messages/contact', icon: MessageSquare },
+        { title: 'Car quotes', url: '/car-rental', icon: Car },
+        { title: 'Reviews', url: '/reviews', icon: Star },
       ],
     },
     {
-      title: 'Inbox',
+      title: 'Sell',
       items: [
-        {
-          title: 'Bookings',
-          url: '/bookings',
-          icon: CalendarDays,
-        },
-        {
-          title: 'Messages',
-          url: '/messages/contact',
-          icon: MessageSquare,
-        },
-        {
-          title: 'Car rental quotes',
-          url: '/car-rental',
-          icon: Car,
-        },
-        {
-          title: 'Reviews',
-          url: '/reviews',
-          icon: Star,
-        },
+        { title: 'Packages', url: '/tour-packages', icon: Package },
+        { title: 'Destinations', url: '/destinations', icon: MapPinned },
+        { title: 'Vehicles', url: '/car-rental/vehicles', icon: Car },
       ],
     },
     {
-      title: 'Website',
+      title: 'Publish',
       items: [
-        {
-          title: 'Home hero',
-          icon: Sparkles,
-          items: [
-            { title: 'All slides', url: '/website/hero' },
-            { title: 'Add slide', url: '/website/hero/new' },
-          ],
-        },
-        {
-          title: 'Site settings',
-          icon: Settings,
-          items: [
-            { title: 'Contact & Brand', url: '/settings/contact' },
-            { title: 'Website content', url: '/settings/content' },
-            { title: 'About page', url: '/settings/about' },
-            { title: 'Team members', url: '/settings/team' },
-            { title: 'Navigation', url: '/settings/navigation' },
-            { title: 'SEO', url: '/settings/seo' },
-            { title: 'Legal pages', url: '/settings/legal' },
-            { title: 'Social links', url: '/settings/social' },
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Catalog',
-      items: [
-        {
-          title: 'Tour packages',
-          icon: Package,
-          items: [
-            { title: 'All packages', url: '/tour-packages' },
-            { title: 'Categories', url: '/tour-packages/categories' },
-            { title: 'Add package', url: '/tour-packages/new' },
-          ],
-        },
-        {
-          title: 'Destinations',
-          url: '/destinations',
-          icon: MapPinned,
-        },
-        {
-          title: 'Car fleet',
-          icon: Car,
-          items: [
-            { title: 'All vehicles', url: '/car-rental/vehicles' },
-            { title: 'Categories', url: '/car-rental/vehicles/categories' },
-            { title: 'Add vehicle', url: '/car-rental/vehicles/new' },
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Content',
-      items: [
-        {
-          title: 'Blog',
-          url: '/blog',
-          icon: Newspaper,
-        },
-        {
-          title: 'Gallery',
-          url: '/gallery',
-          icon: Image,
-        },
+        { title: 'Blog', url: '/blog', icon: Newspaper },
+        { title: 'Photos', url: '/gallery', icon: Image },
+        { title: 'Homepage', url: '/website/hero', icon: Sparkles },
+        { title: 'Edit website', url: '/website', icon: Settings },
       ],
     },
   ],

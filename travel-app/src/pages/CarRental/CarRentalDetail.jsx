@@ -118,7 +118,7 @@ const CarRentalDetail = () => {
                         onClick={() => setActiveImage(idx)}
                         aria-label={`View image ${idx + 1}`}
                       >
-                        <img src={src} alt="" loading="lazy" />
+                        <img src={src} alt={`${vehicle.fullTitle} view ${idx + 1}`} loading="lazy" />
                       </button>
                     ))}
                   </div>

@@ -10,6 +10,7 @@ import {
 } from "../../utils/contentValidation";
 import { useSiteSettings } from "../../context/SiteSettingsContext";
 import { DEFAULT_SITE_SETTINGS } from "../../config/defaultSiteSettings";
+import { landingPathForDestination } from "../../utils/destinationLandings";
 
 import heroBg from "../../assets/images/slider/1.png";
 import heroSlide1 from "../../assets/images/slider/1.png";
@@ -47,10 +48,10 @@ const WHY_CHOOSE = [
 ];
 
 const GALLERY_DESTINATIONS = [
-  { name: "Volcanoes NP", image: heroSlide1, tours: "12 Tours" },
-  { name: "Akagera Safari", image: heroSlide2, tours: "8 Tours" },
-  { name: "Nyungwe Forest", image: heroSlide3, tours: "6 Tours" },
-  { name: "Lake Kivu", image: heroSlide4, tours: "5 Tours" },
+  { name: "Volcanoes NP", image: heroSlide1, tours: "12 Tours", to: "/gorilla-trekking" },
+  { name: "Akagera Safari", image: heroSlide2, tours: "8 Tours", to: "/akagera-safari" },
+  { name: "Nyungwe Forest", image: heroSlide3, tours: "6 Tours", to: "/nyungwe-forest" },
+  { name: "Lake Kivu", image: heroSlide4, tours: "5 Tours", to: "/lake-kivu" },
 ];
 
 const HERO_SLIDES_FALLBACK = [
@@ -63,7 +64,7 @@ const HERO_SLIDES_FALLBACK = [
     image: heroSlide1,
     cardTitle: "VOLCANOES NP",
     cardSubtitle: "Rwanda — Gorillas",
-    link: "/destinations",
+    link: "/gorilla-trekking",
   },
   {
     id: 2,
@@ -74,7 +75,7 @@ const HERO_SLIDES_FALLBACK = [
     image: heroSlide2,
     cardTitle: "AKAGERA SAFARI",
     cardSubtitle: "Rwanda — Wildlife",
-    link: "/destinations",
+    link: "/akagera-safari",
   },
   {
     id: 3,
@@ -85,7 +86,7 @@ const HERO_SLIDES_FALLBACK = [
     image: heroSlide3,
     cardTitle: "NYUNGWE FOREST",
     cardSubtitle: "Rwanda — Canopy",
-    link: "/destinations",
+    link: "/nyungwe-forest",
   },
   {
     id: 4,
@@ -96,7 +97,7 @@ const HERO_SLIDES_FALLBACK = [
     image: heroSlide4,
     cardTitle: "LAKE KIVU",
     cardSubtitle: "Rwanda — Lakeside",
-    link: "/destinations",
+    link: "/lake-kivu",
   },
 ];
 
@@ -121,7 +122,13 @@ function mapDestinationsSlider(destinations) {
     .map((d) => {
     const first = Array.isArray(d.imageUrls) && d.imageUrls.length ? resolveMediaUrl(d.imageUrls[0]) : "";
     const nPkgs = Array.isArray(d.linkedPackageIds) ? d.linkedPackageIds.length : 0;
-    return { id: d.id, name: d.name, tours: `${nPkgs} package${nPkgs === 1 ? "" : "s"}`, image: first || dest1 };
+    return {
+      id: d.id,
+      name: d.name,
+      tours: `${nPkgs} package${nPkgs === 1 ? "" : "s"}`,
+      image: first || dest1,
+      to: landingPathForDestination(d),
+    };
   });
 }
 
@@ -328,13 +335,16 @@ const Home = () => {
                       idx >= (sliderDestinations.length || GALLERY_DESTINATIONS.length)
                     }
                   >
-                    <div className="dest-thumb">
+                    <NavLink
+                      to={dest.to || landingPathForDestination(dest)}
+                      className="dest-thumb"
+                    >
                       <img src={dest.image || dest1} alt={dest.name} />
                       <div className="dest-thumb-info">
                         <h5>{dest.name}</h5>
                         <span>{dest.tours || "Multiple tours"}</span>
                       </div>
-                    </div>
+                    </NavLink>
                   </div>
                 ))}
               </div>
@@ -374,7 +384,7 @@ const Home = () => {
               <div className="social-proof mt-4">
                 <div className="avatar-stack">
                   {socialProofShots.map((img, i) => (
-                    <img key={i} src={img} alt="Rwanda tour highlight" />
+                    <img key={i} src={img} alt={`Happy traveler ${i + 1}`} />
                   ))}
                 </div>
                 <span>1,000+ happy travelers</span>

@@ -1,72 +1,253 @@
 {
   "pages": {
     "/": {
+      "heading": "RwandaQuest Tours — Gorilla Trekking & Safari Rwanda",
+      "description": "Book gorilla trekking, wildlife safaris, car rental, and custom Rwanda tours with RwandaQuest — your trusted Rwanda tour operator.",
+      "paragraphs": [
+        "RwandaQuest is a licensed Kigali-based tour operator for gorilla trekking in Volcanoes National Park, Big Five safaris in Akagera, chimpanzee tracking in Nyungwe Forest, Lake Kivu stays, and Rwanda car rental.",
+        "Browse tour packages, reserve safari vehicles, and plan a custom itinerary with local guides."
+      ],
+      "image": "/og-cover.jpg",
+      "imageAlt": "Rwanda safari landscape and mountain gorilla trekking",
       "changefreq": "weekly",
       "priority": "1.0"
     },
     "/about": {
       "title": "About Us",
+      "heading": "About RwandaQuest",
       "description": "Learn about our Rwanda tour team, mission, and why travelers trust us for gorilla trekking, safaris, and custom East Africa adventures.",
+      "paragraphs": [
+        "We are a local Rwanda tour company specializing in gorilla permits, wildlife safaris, and tailor-made East Africa itineraries."
+      ],
+      "image": "/og-cover.jpg",
+      "imageAlt": "RwandaQuest tour team in Rwanda",
       "changefreq": "monthly",
       "priority": "0.8"
     },
     "/packages": {
       "title": "Tour Packages",
+      "heading": "Rwanda Tour Packages",
       "description": "Browse gorilla trekking, wildlife safari, and custom Rwanda tour packages with expert local guides and transparent pricing.",
+      "paragraphs": [
+        "Choose gorilla trekking, Akagera safari, Nyungwe canopy walks, Kigali city tours, or a custom multi-day Rwanda itinerary."
+      ],
+      "image": "/images/gorilla-trekking.jpg",
+      "imageAlt": "Gorilla trekking tour package in Volcanoes National Park",
       "changefreq": "weekly",
       "priority": "0.9"
     },
     "/car-rental": {
       "title": "Car Rental",
+      "heading": "Car Rental in Rwanda",
       "description": "Rent safari 4x4s, SUVs, and economy cars in Rwanda for self-drive or chauffeur trips across Kigali and national parks.",
+      "paragraphs": [
+        "Reserve a safari Land Cruiser, SUV, or city car for Kigali airport transfers, Akagera game drives, and self-drive Rwanda travel."
+      ],
+      "image": "/images/akagera-safari.jpg",
+      "imageAlt": "Safari vehicle for car rental in Rwanda",
       "changefreq": "weekly",
       "priority": "0.8"
     },
     "/destinations": {
       "title": "Travel Guide",
+      "heading": "Rwanda Destinations",
       "description": "Explore Rwanda destinations — Volcanoes National Park, Akagera, Nyungwe, Lake Kivu, and Kigali travel tips from local experts.",
+      "paragraphs": [
+        "Plan trips to Volcanoes National Park, Akagera National Park, Nyungwe Forest, Lake Kivu, and Kigali with local travel advice."
+      ],
+      "image": "/images/nyungwe-forest.jpg",
+      "imageAlt": "Nyungwe Forest and Rwanda national parks",
       "changefreq": "weekly",
+      "priority": "0.8"
+    },
+    "/gorilla-trekking": {
+      "title": "Gorilla Trekking Rwanda",
+      "heading": "Gorilla Trekking in Volcanoes National Park",
+      "kicker": "Volcanoes National Park",
+      "description": "Book gorilla trekking in Rwanda with permits, lodges, and licensed guides in Volcanoes National Park near Musanze.",
+      "paragraphs": [
+        "Mountain gorilla trekking in Volcanoes National Park is Rwanda's signature wildlife experience. Trek misty bamboo forest with a licensed guide and spend a protected hour with a gorilla family.",
+        "RwandaQuest arranges gorilla permits, 4x4 transfers from Kigali, and lodging in Musanze. Most travelers spend 2–3 nights so the trek is not rushed.",
+        "Golden monkey tracking and a visit to the Dian Fossey grave can be added to the same itinerary."
+      ],
+      "highlights": [
+        "Gorilla permits arranged",
+        "Licensed local guides",
+        "Kigali–Musanze transfers",
+        "Lodge options for every budget"
+      ],
+      "image": "/images/gorilla-trekking.jpg",
+      "imageAlt": "Mountain gorillas in Volcanoes National Park, Rwanda",
+      "schemaType": "TouristAttraction",
+      "changefreq": "weekly",
+      "priority": "0.95"
+    },
+    "/akagera-safari": {
+      "title": "Akagera Safari",
+      "heading": "Akagera National Park Safari",
+      "kicker": "Eastern Province",
+      "description": "Book an Akagera safari in Rwanda — Big Five game drives, Lake Ihema boat cruises, and overnight lodges with local guides.",
+      "paragraphs": [
+        "Akagera National Park is Rwanda's Big Five savannah. Game drives can reveal lions, elephants, rhinos, buffalo, and leopards across lakes and open plains.",
+        "A boat safari on Lake Ihema is the best way to see hippos, crocodiles, and waterbirds. Most visitors stay 2–3 days.",
+        "We provide park fees, a safari 4x4 with a driver-guide, and lodge or tented-camp bookings."
+      ],
+      "highlights": [
+        "Big Five game drives",
+        "Lake Ihema boat safari",
+        "Safari 4x4 with guide",
+        "Park fees arranged"
+      ],
+      "image": "/images/akagera-safari.jpg",
+      "imageAlt": "Wildlife safari in Akagera National Park, Rwanda",
+      "schemaType": "TouristAttraction",
+      "changefreq": "weekly",
+      "priority": "0.9"
+    },
+    "/nyungwe-forest": {
+      "title": "Nyungwe Forest",
+      "heading": "Nyungwe Forest Canopy & Chimpanzees",
+      "kicker": "Southwestern Rwanda",
+      "description": "Walk Africa's longest canopy bridge and track chimpanzees in Nyungwe Forest with RwandaQuest local guides.",
+      "paragraphs": [
+        "Nyungwe is an ancient montane rainforest with chimpanzees, 13 primate species, waterfalls, and a 160-metre canopy walkway.",
+        "Chimpanzee tracking starts early. Combine it with the canopy walk and a night near the park for a complete rainforest stay."
+      ],
+      "highlights": [
+        "Chimpanzee tracking",
+        "Canopy walkway",
+        "Waterfall hikes",
+        "Rainforest lodges"
+      ],
+      "image": "/images/nyungwe-forest.jpg",
+      "imageAlt": "Nyungwe Forest canopy walkway in Rwanda",
+      "schemaType": "TouristAttraction",
+      "changefreq": "monthly",
+      "priority": "0.85"
+    },
+    "/lake-kivu": {
+      "title": "Lake Kivu Tours",
+      "heading": "Lake Kivu Lakeside Tours",
+      "kicker": "Western Rwanda",
+      "description": "Relax on Lake Kivu with boat trips, coffee visits, and lakeside lodges between gorilla trekking and Nyungwe Forest.",
+      "paragraphs": [
+        "Lake Kivu is Rwanda's largest lake — a calm stop between Volcanoes National Park and Nyungwe. Swim, take a boat to the islands, and visit coffee farms.",
+        "Rubavu (Gisenyi) and Karongi are the main bases. Two to three nights works well in a Rwanda circuit."
+      ],
+      "highlights": [
+        "Lakeside lodges",
+        "Boat tours",
+        "Coffee plantations",
+        "Easy pairing with Nyungwe"
+      ],
+      "image": "/images/lake-kivu.jpg",
+      "imageAlt": "Lake Kivu shoreline in western Rwanda",
+      "schemaType": "TouristAttraction",
+      "changefreq": "monthly",
+      "priority": "0.8"
+    },
+    "/kigali-tours": {
+      "title": "Kigali City Tours",
+      "heading": "Kigali City Tours",
+      "kicker": "Kigali, Rwanda",
+      "description": "Book a Kigali city tour — Genocide Memorial, local markets, Inema Arts Center, and airport transfers with a local guide.",
+      "paragraphs": [
+        "Kigali is one of Africa's cleanest capitals and the usual start or end of a Rwanda trip. A guided city tour covers the Kigali Genocide Memorial, craft markets, and contemporary art.",
+        "We also run airport pickups and one-night stopovers before gorilla trekking or safari departures."
+      ],
+      "highlights": [
+        "Kigali Genocide Memorial",
+        "Markets and art studios",
+        "Airport transfers",
+        "Half-day or full-day options"
+      ],
+      "image": "/images/kigali-tours.jpg",
+      "imageAlt": "Kigali city tour in Rwanda",
+      "schemaType": "TouristAttraction",
+      "changefreq": "monthly",
       "priority": "0.8"
     },
     "/blog": {
       "title": "Travel Blog",
-      "description": "Rwanda travel tips, gorilla permit updates, safari guides, and destination stories from our local tour experts.",
+      "heading": "Rwanda Travel Blog",
+      "description": "Rwanda travel tips, gorilla permit updates, safari guides, car rental advice, and destination stories from local tour experts.",
+      "paragraphs": [
+        "Read Rwanda travel guides on gorilla permits, Akagera safaris, Nyungwe Forest, and car rental before you book."
+      ],
+      "image": "/og-cover.jpg",
+      "imageAlt": "Rwanda travel blog stories and safari guides",
       "changefreq": "weekly",
       "priority": "0.7"
     },
     "/contact": {
       "title": "Contact Us",
+      "heading": "Contact RwandaQuest",
       "description": "Contact our Rwanda travel team for tour quotes, gorilla permits, car hire, and custom itinerary planning.",
+      "paragraphs": [
+        "Email, WhatsApp, or the contact form — we help with gorilla permits, safari quotes, and car hire from Kigali."
+      ],
+      "image": "/og-cover.jpg",
+      "imageAlt": "Contact RwandaQuest tour desk in Kigali",
       "changefreq": "monthly",
       "priority": "0.7"
     },
     "/gallery": {
       "title": "Photo Gallery",
+      "heading": "Rwanda Photo Gallery",
       "description": "See photos from gorilla trekking, wildlife safaris, and Rwanda landscapes captured on our tours.",
+      "paragraphs": [
+        "Photos from gorilla trekking, Akagera wildlife, Nyungwe Forest, and Lake Kivu trips."
+      ],
+      "image": "/images/lake-kivu.jpg",
+      "imageAlt": "Rwanda tour photo gallery",
       "changefreq": "monthly",
       "priority": "0.6"
     },
     "/book": {
       "title": "Book a Tour",
+      "heading": "Book a Rwanda Tour",
       "description": "Book gorilla trekking, safaris, and Rwanda tours online — secure requests with flexible payment options.",
+      "paragraphs": [
+        "Send a booking request for gorilla trekking, safari packages, or car rental. We confirm availability and permits quickly."
+      ],
+      "image": "/images/gorilla-trekking.jpg",
+      "imageAlt": "Book a gorilla trekking or safari tour in Rwanda",
       "changefreq": "monthly",
       "priority": "0.8"
     },
     "/services": {
       "title": "Our Services",
+      "heading": "Rwanda Travel Services",
       "description": "Tour packages, car rental, airport transfers, and bespoke Rwanda travel services from a licensed local operator.",
+      "paragraphs": [
+        "Gorilla trekking, wildlife safaris, car rental, airport transfers, and custom Rwanda itineraries."
+      ],
+      "image": "/og-cover.jpg",
+      "imageAlt": "RwandaQuest travel services",
       "changefreq": "monthly",
       "priority": "0.6"
     },
     "/privacy": {
       "title": "Privacy Policy",
+      "heading": "Privacy Policy",
       "description": "How we collect, use, and protect your personal information when you book Rwanda tours with us.",
+      "paragraphs": [
+        "Read how RwandaQuest collects and protects personal information when you book tours or car rental."
+      ],
+      "image": "/og-cover.jpg",
+      "imageAlt": "RwandaQuest privacy policy",
       "changefreq": "yearly",
       "priority": "0.3"
     },
     "/terms": {
       "title": "Terms & Conditions",
+      "heading": "Terms & Conditions",
       "description": "Booking terms, cancellation policy, and conditions for Rwanda tour and car rental services.",
+      "paragraphs": [
+        "Booking terms, cancellation rules, and conditions for RwandaQuest tours and car rental."
+      ],
+      "image": "/og-cover.jpg",
+      "imageAlt": "RwandaQuest booking terms",
       "changefreq": "yearly",
       "priority": "0.3"
     }
@@ -80,7 +261,7 @@
     {
       "match": "/blog/",
       "title": "Travel Blog",
-      "description": "Rwanda travel stories, gorilla trekking tips, and safari guides from our local tour experts."
+      "description": "Rwanda travel stories, gorilla trekking tips, safari guides, and car rental advice from our local tour experts."
     }
   ]
 }

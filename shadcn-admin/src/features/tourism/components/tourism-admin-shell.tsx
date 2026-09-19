@@ -33,7 +33,7 @@ export function TourismAdminShell({
               {title}
             </h2>
             {description ? (
-              <p className='text-muted-foreground mt-1 max-w-2xl text-pretty text-sm sm:text-base'>
+              <p className='text-muted-foreground mt-1 max-w-xl text-pretty text-sm'>
                 {description}
               </p>
             ) : null}

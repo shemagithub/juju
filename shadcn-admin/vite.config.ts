@@ -9,7 +9,10 @@ import { playwright } from '@vitest/browser-playwright'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const apiTarget = (env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '')
+  const apiTarget = (env.VITE_API_URL || 'https://backend.rwandaquesttours.com').replace(
+    /\/$/,
+    '',
+  )
 
   return {
     server: {

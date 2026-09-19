@@ -129,8 +129,7 @@ export function ImageUploader({
           </div>
         ) : (
           <p className='text-muted-foreground mt-2 text-xs'>
-            Tip: drag and drop an image file, or paste a URL. Uploaded files are served from your API
-            under <code>/uploads/</code>.
+            Tip: drop a photo here, or paste a picture link.
           </p>
         )}
         <p className='text-muted-foreground mt-2 text-xs'>Max file size: 6MB.</p>

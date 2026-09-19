@@ -132,8 +132,8 @@ export function TourismCarRentalVehiclesPage() {
 
   return (
     <TourismAdminShell
-      title='Fleet vehicles'
-      description='Vehicles shown on the public Car Rental page and offered in booking requests.'
+      title='Vehicles'
+      description='Cars on the rental page. Add one, then people can request it.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>

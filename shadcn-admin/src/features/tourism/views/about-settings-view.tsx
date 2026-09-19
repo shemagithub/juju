@@ -108,7 +108,7 @@ export function TourismAboutSettingsPage() {
   return (
     <TourismAdminShell
       title='About Us page'
-      description='Hero copy, story, mission, stats, and CTA on the public /about page. Logo and contact details come from Contact & Brand.'
+      description='Story and numbers on the About page. Phone and logo come from Phone & logo.'
       actions={
         <div className='flex flex-wrap gap-2'>
           <Button variant='outline' size='sm' onClick={() => void refetch()}>
@@ -122,7 +122,7 @@ export function TourismAboutSettingsPage() {
             </a>
           </Button>
           <Button variant='outline' size='sm' asChild>
-            <Link to='/settings/contact'>Contact & Brand</Link>
+            <Link to='/settings/contact'>Phone & logo</Link>
           </Button>
         </div>
       }
@@ -134,9 +134,8 @@ export function TourismAboutSettingsPage() {
           <CardHeader>
             <CardTitle>About page content</CardTitle>
             <CardDescription>
-              Leave page title empty to use “About {brandName}” on the travel-app.
-              Separate story paragraphs with a blank line. Enter one value per line for
-              core values.
+              Leave the page title empty to use “About {brandName}”.
+              Put a blank line between story paragraphs. One value per line for core values.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -194,7 +193,7 @@ export function TourismAboutSettingsPage() {
               <div className='space-y-2'>
                 <Label>Our story</Label>
                 <Textarea
-                  className='min-h-[180px] font-mono text-xs'
+                  className='min-h-[180px] text-sm leading-relaxed'
                   value={form.aboutStory}
                   onChange={(e) => set('aboutStory')(e.target.value)}
                 />
